@@ -1,12 +1,13 @@
 #pragma once
-#include "zviewgroups.h"
 
-class ZObjects : public ZViewGroups
+#include "zmdichild.h"
+
+
+class ZObjects : public ZMdiChild
 {
+
 public:
 	ZObjects(QWidget* parent, Qt::WindowFlags flags = 0);
- 
-	void init(const QString &m_TblName);
+
+	void init(const QString& m_TblName);
 };
-
-

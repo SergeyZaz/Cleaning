@@ -28,8 +28,9 @@ private slots:
 	void slotOpenTariffsDialog();
 	void slotOpenPersonsDialog();
 	void slotOpenPaymentsDialog();
-	void slotOpenDeductionsDialog();
 	void slotOpenReportsDialog();
+	void slotOpenPaymentsFioDialog();
+	void slotOpenDeductionsFioDialog();
 
 	void slotUpdate();
 	void slotCleanMsg();

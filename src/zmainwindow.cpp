@@ -46,7 +46,8 @@ ZMainWindow::ZMainWindow()
 	connect(ui.actTariffs, SIGNAL(triggered()), this, SLOT(slotOpenTariffsDialog()));
 	connect(ui.actPersons, SIGNAL(triggered()), this,	SLOT(slotOpenPersonsDialog()));
 	connect(ui.actPayments, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsDialog()));
-	connect(ui.actDeductions, SIGNAL(triggered()), this, SLOT(slotOpenDeductionsDialog()));
+	connect(ui.actPaymentsFio, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsFioDialog()));
+	connect(ui.actDeductionsFio, SIGNAL(triggered()), this, SLOT(slotOpenDeductionsFioDialog()));
 
 	connect(ui.actReports, SIGNAL(triggered()), this,	SLOT(slotOpenReportsDialog()));
 	
@@ -138,6 +139,10 @@ int ZMainWindow::readIniFile()
     QSettings settings(CFG_FILE, QSettings::IniFormat);
 	settings.setIniCodec("UTF-8");
 
+	QString str = settings.value("title").toString();
+	if(!str.isEmpty())
+		setWindowTitle(str);
+
     db = QSqlDatabase::addDatabase(settings.value("Database/driver").toString());
     db.setDatabaseName(settings.value("Database/dbname").toString());
     db.setUserName(settings.value("Database/user").toString());
@@ -151,7 +156,7 @@ int ZMainWindow::readIniFile()
 		ZMessager::Instance().Message(_CriticalError, db.lastError().text(), tr("Ошибка"));
         return 0;
     }
-	setWindowTitle(windowTitle() + " (" + db.databaseName() + " на " + db.hostName() + ")");
+	setWindowTitle(windowTitle() + " (БД: '" + db.databaseName() + "' на '" + db.hostName() + "')");
 
 	ZSettings::Instance().m_Password = settings.value("password").toString();
 	QString user = settings.value("user").toString();
@@ -172,10 +177,10 @@ int ZMainWindow::readIniFile()
 		ui.actTariffs->setEnabled(false);
 		ui.actPersons->setEnabled(false);
 		ui.actPayments->setEnabled(false);
-		ui.actDeductions->setEnabled(false);
-		ui.actConfig->setEnabled(false);
 		ui.actUsers->setEnabled(false);
 		ui.actPersons->setEnabled(false);
+		ui.actPaymentsFio->setEnabled(false);
+		ui.actDeductionsFio->setEnabled(false);
 		break;
 	default:
 		break;
@@ -341,23 +346,13 @@ void ZMainWindow::slotOpenPaymentsDialog()
 	child->show();
 }
 
-void ZMainWindow::slotOpenDeductionsDialog()
-{
-	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
-	{
-		if (dynamic_cast<ZDeductions*>(window->widget()))
-		{
-			ui.mdiArea->setActiveSubWindow(window);
-			return;
-		}
-	}
 
-	ZMdiChild* child = new ZDeductions(this);
-	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
-	ui.mdiArea->addSubWindow(child);
-	child->setWindowTitleAndIcon(ui.actDeductions->text(), ui.actDeductions->icon());
-	child->init("payments");
-	child->show();
+void ZMainWindow::slotOpenPaymentsFioDialog()
+{
+}
+
+void ZMainWindow::slotOpenDeductionsFioDialog()
+{
 }
 
 void ZMainWindow::slotOpenReportsDialog()

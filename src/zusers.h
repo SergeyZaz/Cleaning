@@ -4,7 +4,7 @@
 #include "zeditbaseform.h"
 #include "zmdichild.h"
 
-bool CheckPwd(const QString& login, const QString& psw, int* pType = NULL);
+bool CheckPwd(const QString& login, const QString& psw, int* pType = NULL, int* pCurPeriodId = NULL);
 
 class ZUsersForm : public ZEditAbstractForm
 {
@@ -25,11 +25,15 @@ protected slots:
 
 class ZUsers : public ZMdiChild
 {
+	Q_OBJECT
 
 public:
 	ZUsers(QWidget* parent, Qt::WindowFlags flags = 0);
  
 	void init(const QString &m_TblName);
+
+protected slots:
+	void setDateSlot();
 };
 
 

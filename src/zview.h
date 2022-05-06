@@ -88,6 +88,7 @@ public:
 	QSize	sizeHint() const { return QSize(800, 600); }
 	void setResizeColumnsToContents(bool f) { fResizeColumnsToContents = f; }
 	void setResizeRowsToContents(bool f) { fResizeRowsToContents = f; }
+	int getCurrentId() { return m_Id; }
 private:
 	Ui::ZViewClass ui;
 	bool eventFilter(QObject *obj, QEvent *event);

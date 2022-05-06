@@ -91,7 +91,6 @@
     <addaction name="actTariffs"/>
     <addaction name="actPersons"/>
     <addaction name="actPayments"/>
-    <addaction name="actDeductions"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -135,8 +134,9 @@
    <addaction name="actPosts"/>
    <addaction name="actTariffs"/>
    <addaction name="actPersons"/>
-   <addaction name="actDeductions"/>
    <addaction name="actPayments"/>
+   <addaction name="actDeductionsFio"/>
+   <addaction name="actPaymentsFio"/>
    <addaction name="separator"/>
    <addaction name="actReports"/>
   </widget>
@@ -399,7 +399,7 @@
     <string>Импорт из файла CSV</string>
    </property>
   </action>
-  <action name="actDeductions">
+  <action name="actDeductionsFio">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
      <normaloff>:/images/ms-minus.png</normaloff>:/images/ms-minus.png</iconset>
@@ -414,13 +414,13 @@
   <action name="actPayments">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
-     <normaloff>:/images/ms-plus.png</normaloff>:/images/ms-plus.png</iconset>
+     <normaloff>:/images/t_ms.png</normaloff>:/images/t_ms.png</iconset>
    </property>
    <property name="text">
-    <string>Доплаты</string>
+    <string>Доплаты/Вычеты</string>
    </property>
    <property name="toolTip">
-    <string>Доплаты</string>
+    <string>Доплаты/Вычеты</string>
    </property>
   </action>
   <action name="actImportData">
@@ -490,6 +490,18 @@
    </property>
    <property name="toolTip">
     <string>Должности</string>
+   </property>
+  </action>
+  <action name="actPaymentsFio">
+   <property name="icon">
+    <iconset resource="../cleaning.qrc">
+     <normaloff>:/images/ms-plus.png</normaloff>:/images/ms-plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>Доплаты</string>
+   </property>
+   <property name="toolTip">
+    <string>Доплаты</string>
    </property>
   </action>
  </widget>

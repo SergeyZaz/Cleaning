@@ -10,31 +10,26 @@ ZConfigForm::ZConfigForm(QWidget* parent, Qt::WindowFlags flags)
 {
 	ui.setupUi(this);
 	connect(ui.cmdSave, SIGNAL(clicked()), this, SLOT(applyChanges()));
-
-	ui.dateEdit->setDate(QDate::currentDate());
-
-	if(GetCloseDate())
-		ui.dateEdit->setDate(ZSettings::Instance().m_CloseDate);
+	
+	loadItemsToComboBox(ui.cboPeriod, "periods");
+	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
 }
 
 ZConfigForm::~ZConfigForm() {}
 
 void ZConfigForm::applyChanges()
 {
+	int id = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
+
 	QSqlQuery query;
-	if (!query.exec("DELETE FROM config WHERE key = 'closeDate'"))
+	QString str_query = QString("UPDATE users SET period=%1 WHERE name = '%2'").arg(id).arg(ZSettings::Instance().m_UserName);
+	if (!query.exec(str_query))
 	{
-		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
 		return;
 	}
 	
-	ZSettings::Instance().m_CloseDate = ui.dateEdit->date();
-
-	if (!query.exec(QString("INSERT INTO config(key, value) VALUES('closeDate','%1')").arg(ZSettings::Instance().m_CloseDate.toString(DATE_FORMAT))))
-	{
-		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
-		return;
-	}
+	ZSettings::Instance().m_PeriodId = id;
 
 	accept();
 }
@@ -42,7 +37,8 @@ void ZConfigForm::applyChanges()
 bool GetCloseDate()
 {
 	QSqlQuery query;
-	if (!query.exec("SELECT value FROM config WHERE key = 'closeDate'"))
+	QString str_query = QString("SELECT d_close FROM users WHERE name = '%1'").arg(ZSettings::Instance().m_UserName);
+	if (!query.exec(str_query))
 	{
 		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
 		return false;

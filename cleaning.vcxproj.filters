@@ -203,6 +203,9 @@
     <ClCompile Include="src\zreport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\zperiodform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\zimagelabel.h">
@@ -426,6 +429,9 @@
     <QtMoc Include="src\zreport.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\zperiodform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\zeditbaseform.ui">
@@ -468,6 +474,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="src\zreport.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\zperiodform.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

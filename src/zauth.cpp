@@ -32,7 +32,8 @@ int ZAuthForm::execute()
 void ZAuthForm::applyChanges()
 {
 	int type;
-	if (!CheckPwd(ui.txtLogin->text(), ui.txtPwd->text(), &type))
+	int id;
+	if (!CheckPwd(ui.txtLogin->text(), ui.txtPwd->text(), &type, &id))
 	{
 		ZMessager::Instance().Message(_CriticalError, tr("Ошибка авторизации! Проверьте имя пользователя и пароль!"), tr("Ошибка"));
 		ui.txtPwd->setText("");
@@ -42,6 +43,7 @@ void ZAuthForm::applyChanges()
 
 	ZSettings::Instance().m_UserType = type;
 	ZSettings::Instance().m_UserName = ui.txtLogin->text();
+	ZSettings::Instance().m_PeriodId = id;
 	accept();
 }
 
