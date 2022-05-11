@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>906</width>
-    <height>227</height>
+    <height>253</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="cboFilter">
+         <widget class="QComboBox" name="cboFilter1">
           <property name="minimumSize">
            <size>
             <width>200</width>
@@ -44,7 +44,7 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="lblPayment">
           <property name="text">
            <string>Выплата:</string>
           </property>

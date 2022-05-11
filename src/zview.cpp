@@ -721,14 +721,19 @@ double QString2Double(QString txt)
 	return v;
 }
 
-void loadItemsToComboBox(QComboBox* cbo, const QString& tableName)
+void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString& filter)
 {
 	QSqlQuery query;
 	cbo->clear();
 	if(tableName == "fio")
 		cbo->addItem("не задано", 0);
 
-	auto result = query.exec(QString("SELECT id, name FROM %1 ORDER BY name").arg(tableName));
+	QString strQuery = QString("SELECT id, name FROM %1").arg(tableName);
+	if (!filter.isEmpty())
+		strQuery += " WHERE " + filter;
+	strQuery += " ORDER BY name";
+
+	auto result = query.exec(strQuery);
 	if (result)
 	{
 		while (query.next())
@@ -736,6 +741,7 @@ void loadItemsToComboBox(QComboBox* cbo, const QString& tableName)
 			cbo->addItem(query.value(1).toString(), query.value(0).toInt());
 		}
 	}
+
 	cbo->setCurrentIndex(cbo->findText("не задано"));
 
 	cbo->setEditable(true);

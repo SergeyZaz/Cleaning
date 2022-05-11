@@ -17,7 +17,7 @@
 #include "ztariffs.h"
 #include "zpersons.h"
 #include "zpayments.h"
-
+#include "zpayments2fio.h"
 #include "zreport.h"
 #include "zsettings.h"
 #include "zmessager.h"
@@ -355,10 +355,38 @@ void ZMainWindow::slotOpenPaymentsDialog()
 
 void ZMainWindow::slotOpenPaymentsFioDialog()
 {
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZPayments2fio*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZPayments2fioBase* child = new ZPayments2fio(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->init("payments2fio");
+	child->show();
 }
 
 void ZMainWindow::slotOpenDeductionsFioDialog()
 {
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZDeductions2fio*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZPayments2fioBase* child = new ZDeductions2fio(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->init("payments2fio");
+	child->show();
 }
 
 void ZMainWindow::slotOpenEstimatesDialog()

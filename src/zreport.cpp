@@ -1166,9 +1166,9 @@ void ZTreeDataDelegate::del_clicked()
 
 int ZTreeDataDelegate::openEditor(int id)
 {
-	ZPayments2FioForm* pD = new ZPayments2FioForm(listWidget->parentWidget());
+	/*
+		ZPayments2FioForm* pD = new ZPayments2FioForm(listWidget->parentWidget());
 	pD->init("payments2fio", id);
-
 	switch (column)
 	{
 	case BONUS_COLUMN://Бонусы
@@ -1180,6 +1180,7 @@ int ZTreeDataDelegate::openEditor(int id)
 	default:
 		return 0;
 	}
+
 	pD->ui.cboFIO->setEnabled(false);
 	pD->ui.cboMode->setEnabled(false);
 	pD->ui.dateLinkEdit->setMinimumDate(pEditor->ui.dateStart->date());
@@ -1192,7 +1193,7 @@ int ZTreeDataDelegate::openEditor(int id)
 
 	if (pD->exec() != QDialog::Accepted)
 		return 0;
-
+*/
 	return 1;
 }
 
