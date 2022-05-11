@@ -24,7 +24,7 @@ class ZViewGroups : public QWidget
 	QSqlQueryModel* model;
 	ZSortFilterProxyModel sortModelFIO, sortModel;
 	enum OPERATION { INSERT_OPERATION, DELETE_OPERATION };
-	QString linkTableName;
+	QString linkTableName, workTableName, workTableTitle;
 	int currentId;
 	int periodId;
 	
@@ -43,7 +43,7 @@ public:
 		setWindowIcon(icon);
 	}
 	void setLinkTableName(const QString& tbl);
-	void setup();
+	void setup(const QString& tbl, const QString& title);
 
 public slots:
 	void changeFilterFIO(const QString&);

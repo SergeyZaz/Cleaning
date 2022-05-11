@@ -473,7 +473,7 @@ void ZMainWindow::slotOpenUsersDialog()
 		}
 	}
 
-	ZMdiChild* child = new ZUsers(this);
+	ZUsers* child = new ZUsers(this);
 	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
 	ui.mdiArea->addSubWindow(child);
 	child->setWindowTitleAndIcon(ui.actUsers->text(), ui.actUsers->icon());

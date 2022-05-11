@@ -6,7 +6,7 @@ ZOrganisations::ZOrganisations(QWidget* parent, Qt::WindowFlags flags)// : ZView
 
 void ZOrganisations::init(const QString &m_TblName)
 {
-	setup();
+	setup("fio", "ФИО");
 
 	QList<int> hideColumns;
 	QStringList headers;

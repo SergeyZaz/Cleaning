@@ -2,7 +2,7 @@
 
 #include "ui_zusersform.h"
 #include "zeditbaseform.h"
-#include "zmdichild.h"
+#include "zviewgroups.h"
 
 bool CheckPwd(const QString& login, const QString& psw, int* pType = NULL, int* pCurPeriodId = NULL);
 
@@ -23,7 +23,7 @@ protected slots:
 };
 
 
-class ZUsers : public ZMdiChild
+class ZUsers : public ZViewGroups
 {
 	Q_OBJECT
 

@@ -6,30 +6,32 @@
 #include "zusers.h"
 #include "zmessager.h"
 
-ZUsers::ZUsers(QWidget* parent, Qt::WindowFlags flags): ZMdiChild(parent, flags)
+ZUsers::ZUsers(QWidget* parent, Qt::WindowFlags flags)//: ZMdiChild(parent, flags)
 {
 	QAction* actSetCloseDate = new QAction("Установить выбранную дату закрытия всем пользователям");
 	QList<QAction*> contextMnuActions;
 	contextMnuActions.append(actSetCloseDate);
-	m_tbl->getTblView()->setContextMenuPolicy(Qt::ActionsContextMenu);
-	m_tbl->getTblView()->addActions(contextMnuActions);
+	ui.m_tbl->getTblView()->setContextMenuPolicy(Qt::ActionsContextMenu);
+	ui.m_tbl->getTblView()->addActions(contextMnuActions);
 	connect(actSetCloseDate, SIGNAL(triggered()), this, SLOT(setDateSlot()));
 }
 
 void ZUsers::setDateSlot()
 {
 	QSqlQuery query;
-	QString str_query = QString("UPDATE users SET d_close=(SELECT d_close FROM users WHERE id = %1)").arg(m_tbl->getCurrentId());
+	QString str_query = QString("UPDATE users SET d_close=(SELECT d_close FROM users WHERE id = %1)").arg(ui.m_tbl->getCurrentId());
 	if (!query.exec(str_query))
 	{
 		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
 		return;
 	}
-	m_tbl->reload();
+	ui.m_tbl->reload();
 }
 
 void ZUsers::init(const QString &m_TblName)
 {
+	setup("objects", "Объекты");
+
 	QList<int> hideColumns;
 	QStringList headers;
 	QList<int> cRem;
@@ -38,17 +40,19 @@ void ZUsers::init(const QString &m_TblName)
 	hideColumns << 2;
 	headers << tr("id") << tr("Логин") << tr("Пароль") << tr("Тип") << tr("Рабочий период") << tr("Дата закрытия");
 
-	m_tbl->setTable(m_TblName, headers, cRem);	
-	m_tbl->setCustomEditor(new ZUsersForm(this));
+	ui.m_tbl->setTable(m_TblName, headers, cRem);
+	ui.m_tbl->setCustomEditor(new ZUsersForm(this));
 	
 	QMap<int, QString>* pMap0 = new QMap<int, QString>;
 	pMap0->insert(0, "Администратор");
 	pMap0->insert(1, "Пользователь");
-	m_tbl->setRelation(3, pMap0);
+	ui.m_tbl->setRelation(3, pMap0);
 
-	m_tbl->setRelation(4, "periods", "id", "name");
+	ui.m_tbl->setRelation(4, "periods", "id", "name");
 
-	m_tbl->init(hideColumns, 1, Qt::DescendingOrder);
+	ui.m_tbl->init(hideColumns, 1, Qt::DescendingOrder);
+
+	setLinkTableName("users2objects");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

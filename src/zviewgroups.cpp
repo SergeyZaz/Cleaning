@@ -23,23 +23,29 @@ ZViewGroups::ZViewGroups(QWidget* parent, Qt::WindowFlags flags)//: QDialog(pare
 	connect(ui.m_tbl, SIGNAL(needUpdateVal(int)), this, SLOT(UpdateSlot(int)));
 	
 	loadItemsToComboBox(ui.cboPeriod, "periods");
-	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(UpdateSlot(int)));
 	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
+
+	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(UpdateSlot(int)));
 }
 
 void ZViewGroups::UpdateSlot(int)
 {
-	setup();
+	setup(workTableName, workTableTitle);
 }
 
-void ZViewGroups::setup()
+void ZViewGroups::setup(const QString &tbl, const QString& title)
 {
+	workTableName = tbl;
+	workTableTitle = title;
+	
+	ui.groupBox->setTitle(workTableTitle);
+
 	if (modelFIO)
 		delete modelFIO;
 
 	modelFIO = new ZFioModel();
 
-	modelFIO->setQuery("SELECT id,name FROM public.fio");
+	modelFIO->setQuery(QString("SELECT id,name FROM %1").arg(workTableName));
 	if (modelFIO->lastError().isValid())
 	{
 		QApplication::restoreOverrideCursor();
@@ -50,7 +56,7 @@ void ZViewGroups::setup()
 	sortModelFIO.setSourceModel(modelFIO);
 	sortModelFIO.setFilterKeyColumn(1);
 
-	modelFIO->setHeaderData(1, Qt::Horizontal, "ФИО");
+	modelFIO->setHeaderData(1, Qt::Horizontal, workTableTitle);
 
 	ui.tbl_3->setModel(&sortModelFIO);
 	ui.tbl_3->setColumnHidden(0, true);
@@ -119,12 +125,12 @@ void  ZViewGroups::Update()
 
 	model = new QSqlQueryModel();
 
-	model->setQuery(QString("SELECT value,name FROM %2 INNER JOIN fio ON (value = fio.id) WHERE key=%1 AND period=%3").arg(currentId).arg(linkTableName).arg(periodId));
+	model->setQuery(QString("SELECT value,name FROM %2 INNER JOIN %4 ON (value = %4.id) WHERE key=%1 AND period=%3").arg(currentId).arg(linkTableName).arg(periodId).arg(workTableName));
 
 	sortModel.setSourceModel(model);
 	sortModel.setFilterKeyColumn(1);
 
-	model->setHeaderData(1, Qt::Horizontal, "ФИО");
+	model->setHeaderData(1, Qt::Horizontal, workTableTitle);
 
 	ui.tbl_2->setModel(&sortModel);
 	ui.tbl_2->setColumnHidden(0, true);
