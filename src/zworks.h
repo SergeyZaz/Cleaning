@@ -2,11 +2,11 @@
 
 #include "zmdichild.h"
 
-class ZObjects : public ZMdiChild
+class ZWorks : public ZMdiChild
 {
 
 public:
-	ZObjects(QWidget* parent, Qt::WindowFlags flags = 0);
+	ZWorks(QWidget* parent, Qt::WindowFlags flags = 0);
 
 	void init(const QString& m_TblName);
 };

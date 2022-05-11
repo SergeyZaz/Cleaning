@@ -17,13 +17,16 @@
 #include "ztariffs.h"
 #include "zpersons.h"
 #include "zpayments.h"
-
+#include "zpayments2fio.h"
 #include "zreport.h"
 #include "zsettings.h"
 #include "zmessager.h"
 #include "zusers.h"
 #include "zauth.h"
 #include "zconfigform.h"
+#include "zcontracts.h"
+#include "zworks.h"
+#include "zcontracts.h"
 
 #define	CFG_FILE		"cleaning.ini"
 #define	PROGRAMM_NAME	"Сleaning"
@@ -48,9 +51,12 @@ ZMainWindow::ZMainWindow()
 	connect(ui.actPayments, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsDialog()));
 	connect(ui.actPaymentsFio, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsFioDialog()));
 	connect(ui.actDeductionsFio, SIGNAL(triggered()), this, SLOT(slotOpenDeductionsFioDialog()));
+	connect(ui.actContracts, SIGNAL(triggered()), this, SLOT(slotOpenactContractsDialog()));
+	connect(ui.actWorks, SIGNAL(triggered()), this, SLOT(slotOpenWorksDialog()));
 
-	connect(ui.actReports, SIGNAL(triggered()), this,	SLOT(slotOpenReportsDialog()));
-	
+	connect(ui.actReports, SIGNAL(triggered()), this, SLOT(slotOpenReportsDialog()));
+	connect(ui.actEstimates, SIGNAL(triggered()), this, SLOT(slotOpenEstimatesDialog()));
+
 	connect(ui.cmdCleanMsg, SIGNAL(clicked()), this, SLOT(slotCleanMsg()));
 	connect(ui.cmdSaveMsg, SIGNAL(clicked()), this, SLOT(slotSaveMsg()));
 	connect(ui.actUsers, SIGNAL(triggered()), this, SLOT(slotOpenUsersDialog()));
@@ -349,10 +355,80 @@ void ZMainWindow::slotOpenPaymentsDialog()
 
 void ZMainWindow::slotOpenPaymentsFioDialog()
 {
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZPayments2fio*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZPayments2fioBase* child = new ZPayments2fio(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->init("payments2fio");
+	child->show();
 }
 
 void ZMainWindow::slotOpenDeductionsFioDialog()
 {
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZDeductions2fio*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZPayments2fioBase* child = new ZDeductions2fio(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->init("payments2fio");
+	child->show();
+}
+
+void ZMainWindow::slotOpenEstimatesDialog()
+{
+}
+
+void ZMainWindow::slotOpenactContractsDialog()
+{
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZContracts*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZMdiChild* child = new ZContracts(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->setWindowTitleAndIcon(ui.actContracts->text(), ui.actContracts->icon());
+	child->init("contracts");
+	child->show();
+}
+
+void ZMainWindow::slotOpenWorksDialog()
+{
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZWorks*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZMdiChild* child = new ZWorks(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->setWindowTitleAndIcon(ui.actWorks->text(), ui.actWorks->icon());
+	child->init("works");
+	child->show();
 }
 
 void ZMainWindow::slotOpenReportsDialog()

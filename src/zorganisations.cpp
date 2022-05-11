@@ -1,6 +1,5 @@
 #include "zorganisations.h"
 
-
 ZOrganisations::ZOrganisations(QWidget* parent, Qt::WindowFlags flags)// : ZViewGroups(parent, flags)
 {
 }

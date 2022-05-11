@@ -46,6 +46,36 @@
           <string/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="QGroupBox" name="pnlPeriod">
+            <property name="title">
+             <string>Расчетный период</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <property name="leftMargin">
+              <number>2</number>
+             </property>
+             <property name="topMargin">
+              <number>1</number>
+             </property>
+             <property name="rightMargin">
+              <number>2</number>
+             </property>
+             <property name="bottomMargin">
+              <number>1</number>
+             </property>
+             <property name="spacing">
+              <number>1</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QComboBox" name="cboPeriod"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
           <item>
            <widget class="QLineEdit" name="txtFilter_2">
             <property name="font">

@@ -114,4 +114,4 @@ signals:
 };
 
 double QString2Double(QString txt);
-void loadItemsToComboBox(QComboBox* cbo, const QString& tableName);
+void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString& filter = "");

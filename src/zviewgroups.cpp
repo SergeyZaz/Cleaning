@@ -1,4 +1,5 @@
 #include "zmessager.h"
+#include "zsettings.h"
 #include "zviewgroups.h"
 
 #define HIGHLIGHTCOLOR Qt::cyan
@@ -10,7 +11,8 @@ ZViewGroups::ZViewGroups(QWidget* parent, Qt::WindowFlags flags)//: QDialog(pare
 	modelFIO = NULL;
 	currentId = -1;
 	model = NULL;
-	bool rc;
+	periodId = -1;
+
 	connect(ui.txtFilter_3, SIGNAL(textChanged(const QString&)), this, SLOT(changeFilterFIO(const QString&)));
 	connect(ui.txtFilter_2, SIGNAL(textChanged(const QString&)), this, SLOT(changeFilterFIO(const QString&)));
 	connect(ui.toLeftToolButton, SIGNAL(clicked()), this, SLOT(toLeftSlot()));
@@ -18,7 +20,11 @@ ZViewGroups::ZViewGroups(QWidget* parent, Qt::WindowFlags flags)//: QDialog(pare
 	connect(ui.m_tbl, SIGNAL(setCurrentElem(QEvent::Type, int)), this, SLOT(setCurrentElem(QEvent::Type, int)));
 	connect(ui.tbl_2, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(moveElemSlot(const QModelIndex&)));
 	connect(ui.tbl_3, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(moveElemSlot(const QModelIndex&)));
-	rc = connect(ui.m_tbl, SIGNAL(needUpdateVal(int)), this, SLOT(UpdateSlot(int)));
+	connect(ui.m_tbl, SIGNAL(needUpdateVal(int)), this, SLOT(UpdateSlot(int)));
+	
+	loadItemsToComboBox(ui.cboPeriod, "periods");
+	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(UpdateSlot(int)));
+	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
 }
 
 void ZViewGroups::UpdateSlot(int)
@@ -51,6 +57,8 @@ void ZViewGroups::setup()
 	//ui.tbl_3->verticalHeader()->hide();
 	ui.tbl_3->horizontalHeader()->setSortIndicator(1, Qt::AscendingOrder);
 	//ui.tbl_3->horizontalHeader()->setStretchLastSection(true);
+	
+	periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 
 	Update();
 }
@@ -98,7 +106,7 @@ void  ZViewGroups::Update()
 		return;
 
 	QSqlQuery query;
-	if (query.exec(QString("SELECT distinct(value) FROM %1").arg(linkTableName)))
+	if (query.exec(QString("SELECT distinct(value) FROM %1 WHERE period=%2").arg(linkTableName).arg(periodId)))
 	{
 		QList<int> ids;
 		while (query.next())
@@ -111,7 +119,7 @@ void  ZViewGroups::Update()
 
 	model = new QSqlQueryModel();
 
-	model->setQuery(QString("SELECT value,name FROM %2 INNER JOIN fio ON (value = fio.id) WHERE key=%1").arg(currentId).arg(linkTableName));
+	model->setQuery(QString("SELECT value,name FROM %2 INNER JOIN fio ON (value = fio.id) WHERE key=%1 AND period=%3").arg(currentId).arg(linkTableName).arg(periodId));
 
 	sortModel.setSourceModel(model);
 	sortModel.setFilterKeyColumn(1);
@@ -161,13 +169,13 @@ void ZViewGroups::updateGroups(QTableView* tbl, OPERATION operation)
 
 	if (operation == INSERT_OPERATION)
 	{
-		stringQuery = QString("INSERT INTO %1(key, value) VALUES ").arg(linkTableName);
+		stringQuery = QString("INSERT INTO %1(key, value, period) VALUES ").arg(linkTableName);
 		pSortModel = &sortModelFIO;
 	}
 
 	if (operation == DELETE_OPERATION)
 	{
-		stringQuery = QString("DELETE FROM %1 WHERE key=%2 AND value IN (").arg(linkTableName).arg(currentId);
+		stringQuery = QString("DELETE FROM %1 WHERE key=%2 AND period=%3 AND value IN (").arg(linkTableName).arg(currentId).arg(periodId);
 		pSortModel = &sortModel;
 	}
 
@@ -187,7 +195,7 @@ void ZViewGroups::updateGroups(QTableView* tbl, OPERATION operation)
 	{
 		id = pSortModel->data(pSortModel->index(indx.row(), 0)).toInt();
 		if (operation == INSERT_OPERATION)
-			stringQuery += QString("(%1, %2),").arg(currentId).arg(id);
+			stringQuery += QString("(%1, %2, %3),").arg(currentId).arg(id).arg(periodId);
 		if (operation == DELETE_OPERATION)
 			stringQuery += QString("%1,").arg(id);
 	}
