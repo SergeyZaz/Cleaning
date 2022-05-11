@@ -31,6 +31,9 @@ private slots:
 	void slotOpenReportsDialog();
 	void slotOpenPaymentsFioDialog();
 	void slotOpenDeductionsFioDialog();
+	void slotOpenEstimatesDialog();
+	void slotOpenactContractsDialog();
+	void slotOpenWorksDialog();
 
 	void slotUpdate();
 	void slotCleanMsg();

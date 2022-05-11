@@ -77,20 +77,24 @@
     <property name="title">
      <string>Файл</string>
     </property>
+    <addaction name="actEstimates"/>
     <addaction name="actReports"/>
+    <addaction name="separator"/>
     <addaction name="actClose"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
      <string>Справочники</string>
     </property>
-    <addaction name="actObjects"/>
+    <addaction name="actPersons"/>
     <addaction name="actPeriods"/>
+    <addaction name="actObjects"/>
     <addaction name="actOrganisations"/>
     <addaction name="actPosts"/>
     <addaction name="actTariffs"/>
-    <addaction name="actPersons"/>
     <addaction name="actPayments"/>
+    <addaction name="actContracts"/>
+    <addaction name="actWorks"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -128,16 +132,20 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actObjects"/>
+   <addaction name="actPersons"/>
    <addaction name="actPeriods"/>
+   <addaction name="actObjects"/>
    <addaction name="actOrganisations"/>
    <addaction name="actPosts"/>
    <addaction name="actTariffs"/>
-   <addaction name="actPersons"/>
    <addaction name="actPayments"/>
+   <addaction name="actContracts"/>
+   <addaction name="actWorks"/>
+   <addaction name="separator"/>
    <addaction name="actDeductionsFio"/>
    <addaction name="actPaymentsFio"/>
    <addaction name="separator"/>
+   <addaction name="actEstimates"/>
    <addaction name="actReports"/>
   </widget>
   <widget class="QDockWidget" name="dockMsgPanel">
@@ -354,7 +362,7 @@
   <action name="actOrganisations">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
-     <normaloff>:/images/digg_48.png</normaloff>:/images/digg_48.png</iconset>
+     <normaloff>:/images/star_48.png</normaloff>:/images/star_48.png</iconset>
    </property>
    <property name="text">
     <string>Организации</string>
@@ -375,16 +383,16 @@
     <string>Табели</string>
    </property>
   </action>
-  <action name="actArchivs">
+  <action name="actContracts">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
      <normaloff>:/images/modify.png</normaloff>:/images/modify.png</iconset>
    </property>
    <property name="text">
-    <string>Архив</string>
+    <string>Договора</string>
    </property>
    <property name="toolTip">
-    <string>Архив</string>
+    <string>Договора</string>
    </property>
   </action>
   <action name="actOpenFileXLSX">
@@ -423,16 +431,16 @@
     <string>Доплаты/Вычеты</string>
    </property>
   </action>
-  <action name="actImportData">
+  <action name="actEstimates">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
      <normaloff>:/images/new.png</normaloff>:/images/new.png</iconset>
    </property>
    <property name="text">
-    <string>Импортированные данные</string>
+    <string>Сметы</string>
    </property>
    <property name="toolTip">
-    <string>Импортированные данные</string>
+    <string>Сметы</string>
    </property>
   </action>
   <action name="actNotes">
@@ -502,6 +510,18 @@
    </property>
    <property name="toolTip">
     <string>Доплаты</string>
+   </property>
+  </action>
+  <action name="actWorks">
+   <property name="icon">
+    <iconset resource="../cleaning.qrc">
+     <normaloff>:/images/digg_48.png</normaloff>:/images/digg_48.png</iconset>
+   </property>
+   <property name="text">
+    <string>Работы</string>
+   </property>
+   <property name="toolTip">
+    <string>Работы</string>
    </property>
   </action>
  </widget>

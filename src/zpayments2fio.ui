@@ -26,14 +26,14 @@
         <string>Фильтры</string>
        </property>
        <layout class="QFormLayout" name="formLayout">
-        <item row="0" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string>Организация:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="1" column="1">
          <widget class="QComboBox" name="cboFilter">
           <property name="minimumSize">
            <size>
@@ -43,15 +43,32 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
            <string>Выплата:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QComboBox" name="cboFilter2">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Период:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="cboPeriod">
           <property name="minimumSize">
            <size>
             <width>200</width>

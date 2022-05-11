@@ -206,6 +206,12 @@
     <ClCompile Include="src\zperiodform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\zcontracts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zworks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\zimagelabel.h">
@@ -374,6 +380,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\zposts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zcontracts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zworks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

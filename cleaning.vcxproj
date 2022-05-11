@@ -136,6 +136,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\zauth.cpp" />
     <ClCompile Include="src\zconfigform.cpp" />
+    <ClCompile Include="src\zcontracts.cpp" />
     <ClCompile Include="src\zobjects.cpp" />
     <ClCompile Include="src\zpayments2fio.cpp" />
     <ClCompile Include="src\zpayments2fioform.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="src\zsettings.cpp" />
     <ClCompile Include="src\zpersons.cpp" />
     <ClCompile Include="src\zview.cpp" />
+    <ClCompile Include="src\zworks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QXlsx\header\xlsxabstractooxmlfile.h" />
@@ -206,11 +208,13 @@
     <ClInclude Include="QXlsx\header\xlsxworksheet_p.h" />
     <ClInclude Include="QXlsx\header\xlsxzipreader_p.h" />
     <ClInclude Include="QXlsx\header\xlsxzipwriter_p.h" />
+    <ClInclude Include="src\zworks.h" />
     <QtMoc Include="src\zusers.h" />
     <QtMoc Include="QXlsx\header\xlsxdocument.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="src\zauth.h" />
     <QtMoc Include="src\zconfigform.h" />
+    <ClInclude Include="src\zcontracts.h" />
     <ClInclude Include="src\zobjects.h" />
     <QtMoc Include="src\zviewgroups.h" />
     <ClInclude Include="src\zimagelabel.h" />
