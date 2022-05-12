@@ -19,6 +19,7 @@ protected slots:
 	void applyChanges();
 	void addNewSlot();
 };
+
 class ZContracts : public ZMdiChild
 {
 

@@ -137,6 +137,7 @@
     <ClCompile Include="src\zauth.cpp" />
     <ClCompile Include="src\zconfigform.cpp" />
     <ClCompile Include="src\zcontracts.cpp" />
+    <ClCompile Include="src\zestimates.cpp" />
     <ClCompile Include="src\zobjects.cpp" />
     <ClCompile Include="src\zpayments2fio.cpp" />
     <ClCompile Include="src\zpayments2fioform.cpp" />
@@ -155,7 +156,7 @@
     <ClCompile Include="src\ztariffs.cpp" />
     <ClCompile Include="src\ztariffsform.cpp" />
     <ClCompile Include="src\zorganisations.cpp" />
-    <ClCompile Include="src\zreport.cpp" />
+    <ClCompile Include="src\zreports.cpp" />
     <ClCompile Include="src\zperiods.cpp" />
     <ClCompile Include="src\zsettings.cpp" />
     <ClCompile Include="src\zpersons.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="QXlsx\header\xlsxworksheet_p.h" />
     <ClInclude Include="QXlsx\header\xlsxzipreader_p.h" />
     <ClInclude Include="QXlsx\header\xlsxzipwriter_p.h" />
+    <QtMoc Include="src\zestimates.h" />
     <ClInclude Include="src\zvariants.h" />
     <ClInclude Include="src\zworks.h" />
     <QtMoc Include="src\zusers.h" />
@@ -234,7 +236,7 @@
     <ClInclude Include="src\zpersons.h" />
     <QtMoc Include="src\zview.h" />
     <QtMoc Include="src\ztoolwidget.h" />
-    <QtMoc Include="src\zreport.h" />
+    <ClInclude Include="src\zreports.h" />
     <QtMoc Include="src\ztariffsform.h" />
     <QtMoc Include="src\zposts.h" />
     <QtMoc Include="src\zmdichild.h" />
@@ -246,6 +248,7 @@
     <QtUic Include="src\zconfigform.ui" />
     <QtUic Include="src\zcontractsform.ui" />
     <QtUic Include="src\zeditbaseform.ui" />
+    <QtUic Include="src\zestimatesform.ui" />
     <QtUic Include="src\zpayments2fio.ui" />
     <QtUic Include="src\zpayments2fioform.ui" />
     <QtUic Include="src\zpaymentsform.ui" />

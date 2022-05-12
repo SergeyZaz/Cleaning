@@ -10,6 +10,7 @@
 #include <QInputDialog>
 
 #include "zmainwindow.h"
+
 #include "zobjects.h"
 #include "zperiods.h"
 #include "zorganisations.h"
@@ -17,7 +18,6 @@
 #include "zpersons.h"
 #include "zpayments.h"
 #include "zpayments2fio.h"
-#include "zreport.h"
 #include "zsettings.h"
 #include "zmessager.h"
 #include "zusers.h"
@@ -27,6 +27,9 @@
 #include "zworks.h"
 #include "zcontracts.h"
 #include "zvariants.h"
+
+#include "zestimates.h"
+#include "zreports.h"
 
 #define	CFG_FILE		"cleaning.ini"
 #define	PROGRAMM_NAME	"Сleaning"
@@ -392,10 +395,6 @@ void ZMainWindow::slotOpenDeductionsFioDialog()
 	child->show();
 }
 
-void ZMainWindow::slotOpenEstimatesDialog()
-{
-}
-
 void ZMainWindow::slotOpenactContractsDialog()
 {
 	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
@@ -434,19 +433,41 @@ void ZMainWindow::slotOpenWorksDialog()
 	child->show();
 }
 
-void ZMainWindow::slotOpenReportsDialog()
+void ZMainWindow::slotOpenEstimatesDialog()
 {
 	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
 	{
-		if (dynamic_cast<ZReport*>(window->widget()))
+		if (dynamic_cast<ZEstimates*>(window->widget()))
 		{
 			ui.mdiArea->setActiveSubWindow(window);
 			return;
 		}
 	}
 
-	QWidget* child = new ZReport(this);
+	ZMdiChild* child = new ZEstimates(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
 	ui.mdiArea->addSubWindow(child);
+	child->setWindowTitleAndIcon(ui.actEstimates->text(), ui.actEstimates->icon());
+	child->init("estimates");
+	child->show();
+}
+
+void ZMainWindow::slotOpenReportsDialog()
+{
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZReports*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZMdiChild* child = new ZReports(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->setWindowTitleAndIcon(ui.actReports->text(), ui.actReports->icon());
+	child->init("estimates");
 	child->show();
 }
 
