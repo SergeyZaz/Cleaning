@@ -53,6 +53,7 @@ int ZPeriodForm::init(const QString &table, int id )
 
 void ZPeriodForm::addNewSlot()
 {
+	oldId = curEditId;
 	curEditId = ADD_UNIC_CODE;
 	applyChanges();
 }
@@ -62,7 +63,7 @@ void ZPeriodForm::applyChanges()
 	QString text, stringQuery;
 
 	if (curEditId == ADD_UNIC_CODE)
-		stringQuery = QString("INSERT INTO periods (name,comment,d_open,d_close) VALUES (?, ?, ?, ?)");
+		stringQuery = QString("INSERT INTO periods (name,comment,d_open,d_close) VALUES (?, ?, ?, ?) RETURNING id");
 	else
 		stringQuery = QString("UPDATE periods SET name=?, comment=?, d_open=?, d_close=? WHERE id=%1").arg(curEditId);
 
@@ -81,5 +82,42 @@ void ZPeriodForm::applyChanges()
 		return;
 	}
 	
+	if (curEditId == ADD_UNIC_CODE && oldId != ADD_UNIC_CODE && query.next())
+	{
+		curEditId = query.value(0).toInt();
+
+		if(!copyData(oldId, curEditId))
+			return;
+	}
+
 	accept();
+}
+
+int ZPeriodForm::copyData(int curId, int newId)
+{
+	QSqlQuery query;
+	QString stringQuery;
+
+	//tariffs и objects2fio не используются!!!
+
+	//payments2fio не копирую!!!
+
+	//organisation2fio
+	stringQuery = QString("INSERT INTO organisation2fio (key, value, period) (SELECT key, value, %2 FROM organisation2fio WHERE period=%1)").arg(curId).arg(newId);
+
+	if (!query.exec(stringQuery))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		return 0;
+	}
+
+	//users2objects
+	stringQuery = QString("INSERT INTO users2objects (key, value, period) (SELECT key, value, %2 FROM users2objects WHERE period=%1)").arg(curId).arg(newId);
+
+	if (!query.exec(stringQuery))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		return 0;
+	}
+	return 1;
 }

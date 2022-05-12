@@ -32,8 +32,6 @@ public:
  
 	void init(const QString &m_TblName);
 
-protected slots:
-	void setDateSlot();
 };
 
 

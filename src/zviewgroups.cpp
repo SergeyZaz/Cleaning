@@ -11,7 +11,9 @@ ZViewGroups::ZViewGroups(QWidget* parent, Qt::WindowFlags flags)//: QDialog(pare
 	modelFIO = NULL;
 	currentId = -1;
 	model = NULL;
-	periodId = -1;
+
+	loadItemsToComboBox(ui.cboPeriod, "periods");
+	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
 
 	connect(ui.txtFilter_3, SIGNAL(textChanged(const QString&)), this, SLOT(changeFilterFIO(const QString&)));
 	connect(ui.txtFilter_2, SIGNAL(textChanged(const QString&)), this, SLOT(changeFilterFIO(const QString&)));
@@ -21,10 +23,6 @@ ZViewGroups::ZViewGroups(QWidget* parent, Qt::WindowFlags flags)//: QDialog(pare
 	connect(ui.tbl_2, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(moveElemSlot(const QModelIndex&)));
 	connect(ui.tbl_3, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(moveElemSlot(const QModelIndex&)));
 	connect(ui.m_tbl, SIGNAL(needUpdateVal(int)), this, SLOT(UpdateSlot(int)));
-	
-	loadItemsToComboBox(ui.cboPeriod, "periods");
-	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
-
 	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(UpdateSlot(int)));
 }
 
@@ -38,6 +36,8 @@ void ZViewGroups::setup(const QString &tbl, const QString& title)
 	workTableName = tbl;
 	workTableTitle = title;
 	
+	loadItemsToComboBox(ui.cboPeriod, "periods");
+
 	ui.groupBox->setTitle(workTableTitle);
 
 	if (modelFIO)
@@ -64,8 +64,6 @@ void ZViewGroups::setup(const QString &tbl, const QString& title)
 	ui.tbl_3->horizontalHeader()->setSortIndicator(1, Qt::AscendingOrder);
 	//ui.tbl_3->horizontalHeader()->setStretchLastSection(true);
 	
-	periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
-
 	Update();
 }
 
@@ -110,6 +108,8 @@ void  ZViewGroups::Update()
 {
 	if (!modelFIO)
 		return;
+	
+	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 
 	QSqlQuery query;
 	if (query.exec(QString("SELECT distinct(value) FROM %1 WHERE period=%2").arg(linkTableName).arg(periodId)))
@@ -159,6 +159,8 @@ void ZViewGroups::updateGroups(QTableView* tbl, OPERATION operation)
 {
 	if (!tbl)
 		return;
+	
+	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 
 	QString stringQuery = "";	
 	QModelIndexList listIndxs;

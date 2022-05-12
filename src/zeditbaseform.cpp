@@ -26,12 +26,6 @@ int ZEditBaseForm::init(const QString &tbl, int id)
 
 	fNeedComment = true;
 
-	if(m_tbl == "sbk.rank" ||
-		m_tbl == "sbk.deptpost" ||
-		m_tbl == "sbk.brcategory" ||
-		m_tbl == "sbk.arealvl" )
-			fNeedComment = false;
-
 	QString sQry;
 
 	if(!fNeedComment)
@@ -98,6 +92,7 @@ void ZEditBaseForm::textChangedSlot(const QString &text)
 
 void ZEditBaseForm::addNewSlot()
 {
+	oldId = curEditId;
 	curEditId = ADD_UNIC_CODE;
 	if (applyChange() == 1)
 		accept();
@@ -118,12 +113,12 @@ int ZEditBaseForm::applyChange()
 	if(curEditId==ADD_UNIC_CODE)
 	{
 		if(fNeedComment)
-			sQry = QString("INSERT INTO %1(id, \"name\", \"comment\") VALUES(nextval('%1_id_seq'), '%2', '%3')")
+			sQry = QString("INSERT INTO %1(name, comment) VALUES('%2', '%3') RETURNING id")
 				.arg(m_tbl)
 				.arg(tName)
 				.arg(tComm);
 		else
-			sQry = QString("INSERT INTO %1(id, \"name\") VALUES(nextval('%1_id_seq'), '%2')")
+			sQry = QString("INSERT INTO %1(name) VALUES('%2') RETURNING id")
 				.arg(m_tbl)
 				.arg(tName);
 	}
@@ -149,6 +144,14 @@ int ZEditBaseForm::applyChange()
 	{
 		emit errorQuery(QDateTime::currentDateTime(), m_Query.lastError().number(), m_Query.lastError().text());
 		return 0;
+	}
+
+	if (curEditId == ADD_UNIC_CODE && oldId != ADD_UNIC_CODE && m_Query.next())
+	{
+		curEditId = m_Query.value(0).toInt();
+
+		if (!copyData(oldId, curEditId))
+			return 0;
 	}
 
 	return 1;

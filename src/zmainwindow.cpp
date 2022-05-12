@@ -14,7 +14,6 @@
 #include "zperiods.h"
 #include "zorganisations.h"
 #include "zposts.h"
-#include "ztariffs.h"
 #include "zpersons.h"
 #include "zpayments.h"
 #include "zpayments2fio.h"
@@ -27,6 +26,7 @@
 #include "zcontracts.h"
 #include "zworks.h"
 #include "zcontracts.h"
+#include "zvariants.h"
 
 #define	CFG_FILE		"cleaning.ini"
 #define	PROGRAMM_NAME	"Сleaning"
@@ -42,17 +42,18 @@ ZMainWindow::ZMainWindow()
 	connect(ui.actAbout, SIGNAL(triggered()), this, SLOT(slotAbout()));
 	connect(ui.actAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-	connect(ui.actObjects, SIGNAL(triggered()), this,	SLOT(slotOpenObjectsDialog()));
+	connect(ui.actPersons, SIGNAL(triggered()), this, SLOT(slotOpenPersonsDialog()));
+	connect(ui.actContracts, SIGNAL(triggered()), this, SLOT(slotOpenactContractsDialog()));
 	connect(ui.actPeriods, SIGNAL(triggered()), this, SLOT(slotOpenPeriodsDialog()));
-	connect(ui.actOrganisations, SIGNAL(triggered()), this, SLOT(slotOpenOrganisationsDialog()));
 	connect(ui.actPosts, SIGNAL(triggered()), this, SLOT(slotOpenPostsDialog()));
-	connect(ui.actTariffs, SIGNAL(triggered()), this, SLOT(slotOpenTariffsDialog()));
-	connect(ui.actPersons, SIGNAL(triggered()), this,	SLOT(slotOpenPersonsDialog()));
+	connect(ui.actObjects, SIGNAL(triggered()), this,	SLOT(slotOpenObjectsDialog()));
 	connect(ui.actPayments, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsDialog()));
+	connect(ui.actWorks, SIGNAL(triggered()), this, SLOT(slotOpenWorksDialog()));
+	connect(ui.actVariants, SIGNAL(triggered()), this, SLOT(slotOpenVariantsDialog()));
+	connect(ui.actOrganisations, SIGNAL(triggered()), this, SLOT(slotOpenOrganisationsDialog()));
+
 	connect(ui.actPaymentsFio, SIGNAL(triggered()), this, SLOT(slotOpenPaymentsFioDialog()));
 	connect(ui.actDeductionsFio, SIGNAL(triggered()), this, SLOT(slotOpenDeductionsFioDialog()));
-	connect(ui.actContracts, SIGNAL(triggered()), this, SLOT(slotOpenactContractsDialog()));
-	connect(ui.actWorks, SIGNAL(triggered()), this, SLOT(slotOpenWorksDialog()));
 
 	connect(ui.actReports, SIGNAL(triggered()), this, SLOT(slotOpenReportsDialog()));
 	connect(ui.actEstimates, SIGNAL(triggered()), this, SLOT(slotOpenEstimatesDialog()));
@@ -162,7 +163,6 @@ int ZMainWindow::readIniFile()
 		ZMessager::Instance().Message(_CriticalError, db.lastError().text(), tr("Ошибка"));
         return 0;
     }
-	setWindowTitle(windowTitle() + " (БД: '" + db.databaseName() + "' на '" + db.hostName() + "')");
 
 	ZSettings::Instance().m_Password = settings.value("password").toString();
 	QString user = settings.value("user").toString();
@@ -172,6 +172,8 @@ int ZMainWindow::readIniFile()
 	ZAuthForm auth(this);
 	if (auth.execute() != 1)
 		return 0;
+
+	setWindowTitle(windowTitle() + " (БД: '" + db.databaseName() + "' на '" + db.hostName() + "') пользователь: '" + ZSettings::Instance().m_UserName + "'");
 
 	switch (ZSettings::Instance().m_UserType)
 	{
@@ -277,24 +279,6 @@ void ZMainWindow::slotOpenPeriodsDialog()
 	child->show();
 }
 
-void ZMainWindow::slotOpenTariffsDialog()
-{
-	foreach (QMdiSubWindow *window, ui.mdiArea->subWindowList()) 
-	{
-		if (dynamic_cast<ZTariffs*>(window->widget()))
-		{
-			ui.mdiArea->setActiveSubWindow(window);
-			return;
-		}
-	}
-
-	ZTariffs *child = new ZTariffs(this);
-	connect(child, SIGNAL(needUpdate()), this,SLOT(slotUpdate()));
-	ui.mdiArea->addSubWindow(child);
-	child->init();
-	child->show();
-}
-
 void ZMainWindow::slotOpenOrganisationsDialog()
 {
 	foreach (QMdiSubWindow *window, ui.mdiArea->subWindowList()) 
@@ -311,6 +295,25 @@ void ZMainWindow::slotOpenOrganisationsDialog()
 	ui.mdiArea->addSubWindow(child);
 	child->setWindowTitleAndIcon(ui.actOrganisations->text(), ui.actOrganisations->icon());
 	child->init("organisation");
+	child->show();
+}
+
+void ZMainWindow::slotOpenVariantsDialog()
+{
+	foreach(QMdiSubWindow * window, ui.mdiArea->subWindowList())
+	{
+		if (dynamic_cast<ZVariants*>(window->widget()))
+		{
+			ui.mdiArea->setActiveSubWindow(window);
+			return;
+		}
+	}
+
+	ZVariants* child = new ZVariants(this);
+	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	ui.mdiArea->addSubWindow(child);
+	child->setWindowTitleAndIcon(ui.actVariants->text(), ui.actVariants->icon());
+	child->init("variants");
 	child->show();
 }
 

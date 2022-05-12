@@ -25,6 +25,8 @@ ZPayments2fioBase::ZPayments2fioBase(QWidget* parent, int mode, Qt::WindowFlags 
 	loadItemsToComboBox(ui.cboFilter2, "payments");
 	ui.cboFilter2->setCurrentIndex(0);
 
+	ui.cmdImport->setDisabled(true);// !!! убрать
+
 	connect(ui.m_tbl, SIGNAL(needUpdateVal(int)), this, SLOT(UpdateSumma(int)));
 	connect(ui.cmdImport, SIGNAL(clicked()), this, SLOT(ImportSlot()));
 	connect(ui.m_tbl, SIGNAL(needUpdate()), this, SLOT(ChangeFilter()));

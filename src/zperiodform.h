@@ -12,6 +12,7 @@ public:
 	~ZPeriodForm();
 
 	int init(const QString& table, int id);
+	int copyData(int curId, int newId);
 	Ui::ZPeriodForm ui;
 
 protected slots:

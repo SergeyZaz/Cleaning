@@ -87,14 +87,14 @@
      <string>Справочники</string>
     </property>
     <addaction name="actPersons"/>
-    <addaction name="actPeriods"/>
-    <addaction name="actObjects"/>
-    <addaction name="actOrganisations"/>
-    <addaction name="actPosts"/>
-    <addaction name="actTariffs"/>
-    <addaction name="actPayments"/>
     <addaction name="actContracts"/>
+    <addaction name="actPeriods"/>
+    <addaction name="actPosts"/>
+    <addaction name="actObjects"/>
+    <addaction name="actPayments"/>
     <addaction name="actWorks"/>
+    <addaction name="actVariants"/>
+    <addaction name="actOrganisations"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -133,14 +133,14 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actPersons"/>
-   <addaction name="actPeriods"/>
-   <addaction name="actObjects"/>
-   <addaction name="actOrganisations"/>
-   <addaction name="actPosts"/>
-   <addaction name="actTariffs"/>
-   <addaction name="actPayments"/>
    <addaction name="actContracts"/>
+   <addaction name="actPeriods"/>
+   <addaction name="actPosts"/>
+   <addaction name="actObjects"/>
+   <addaction name="actPayments"/>
    <addaction name="actWorks"/>
+   <addaction name="actVariants"/>
+   <addaction name="actOrganisations"/>
    <addaction name="separator"/>
    <addaction name="actDeductionsFio"/>
    <addaction name="actPaymentsFio"/>
@@ -443,16 +443,16 @@
     <string>Сметы</string>
    </property>
   </action>
-  <action name="actNotes">
+  <action name="actVariants">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
      <normaloff>:/images/bell.png</normaloff>:/images/bell.png</iconset>
    </property>
    <property name="text">
-    <string>Заметки</string>
+    <string>Варианты работ в табеле</string>
    </property>
    <property name="toolTip">
-    <string>Заметки</string>
+    <string>Варианты работ в табеле</string>
    </property>
   </action>
   <action name="actNotebooks">
@@ -491,7 +491,7 @@
   <action name="actPosts">
    <property name="icon">
     <iconset resource="../cleaning.qrc">
-     <normaloff>:/images/cleaning.png</normaloff>:/images/cleaning.png</iconset>
+     <normaloff>:/images/msgbox5.png</normaloff>:/images/msgbox5.png</iconset>
    </property>
    <property name="text">
     <string>Должности</string>

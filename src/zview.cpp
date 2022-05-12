@@ -724,6 +724,11 @@ double QString2Double(QString txt)
 void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString& filter)
 {
 	QSqlQuery query;
+	
+	cbo->blockSignals(true);
+
+	QString txt = cbo->currentText();
+
 	cbo->clear();
 	if(tableName == "fio")
 		cbo->addItem("не задано", 0);
@@ -742,11 +747,16 @@ void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString
 		}
 	}
 
-	cbo->setCurrentIndex(cbo->findText("не задано"));
+	if (txt.isEmpty())
+		txt = "не задано";
+		
+	cbo->setCurrentIndex(cbo->findText(txt));
 
 	cbo->setEditable(true);
 	QCompleter* completer = new QCompleter();
 	completer->setModel(cbo->model());
 	completer->setCaseSensitivity(Qt::CaseInsensitive);
 	cbo->setCompleter(completer);
+
+	cbo->blockSignals(false);
 }

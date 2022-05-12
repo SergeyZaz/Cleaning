@@ -26,7 +26,6 @@ class ZViewGroups : public QWidget
 	enum OPERATION { INSERT_OPERATION, DELETE_OPERATION };
 	QString linkTableName, workTableName, workTableTitle;
 	int currentId;
-	int periodId;
 	
 	void updateGroups(QTableView* tbl, OPERATION operation);
 	void Update();

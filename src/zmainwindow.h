@@ -25,7 +25,6 @@ private slots:
 	void slotOpenPeriodsDialog();
 	void slotOpenOrganisationsDialog();
 	void slotOpenPostsDialog();
-	void slotOpenTariffsDialog();
 	void slotOpenPersonsDialog();
 	void slotOpenPaymentsDialog();
 	void slotOpenReportsDialog();
@@ -34,6 +33,7 @@ private slots:
 	void slotOpenEstimatesDialog();
 	void slotOpenactContractsDialog();
 	void slotOpenWorksDialog();
+	void slotOpenVariantsDialog();
 
 	void slotUpdate();
 	void slotCleanMsg();

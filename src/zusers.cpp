@@ -9,23 +9,35 @@
 ZUsers::ZUsers(QWidget* parent, Qt::WindowFlags flags)//: ZMdiChild(parent, flags)
 {
 	QAction* actSetCloseDate = new QAction("Установить выбранную дату закрытия всем пользователям");
+	QAction* actSetPeriod = new QAction("Установить выбранный рабочий период всем пользователям");
 	QList<QAction*> contextMnuActions;
 	contextMnuActions.append(actSetCloseDate);
+	contextMnuActions.append(actSetPeriod);
 	ui.m_tbl->getTblView()->setContextMenuPolicy(Qt::ActionsContextMenu);
 	ui.m_tbl->getTblView()->addActions(contextMnuActions);
-	connect(actSetCloseDate, SIGNAL(triggered()), this, SLOT(setDateSlot()));
-}
 
-void ZUsers::setDateSlot()
-{
-	QSqlQuery query;
-	QString str_query = QString("UPDATE users SET d_close=(SELECT d_close FROM users WHERE id = %1)").arg(ui.m_tbl->getCurrentId());
-	if (!query.exec(str_query))
-	{
-		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
-		return;
-	}
-	ui.m_tbl->reload();
+	connect(actSetCloseDate, &QAction::triggered, [actSetCloseDate, this]()
+		{
+			QSqlQuery query;
+			QString str_query = QString("UPDATE users SET d_close=(SELECT d_close FROM users WHERE id = %1)").arg(ui.m_tbl->getCurrentId());
+			if (!query.exec(str_query))
+			{
+				ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+				return;
+			}
+			ui.m_tbl->reload();
+		});
+	connect(actSetPeriod, &QAction::triggered, [actSetPeriod, this]()
+		{
+			QSqlQuery query;
+			QString str_query = QString("UPDATE users SET period=(SELECT period FROM users WHERE id = %1)").arg(ui.m_tbl->getCurrentId());
+			if (!query.exec(str_query))
+			{
+				ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+				return;
+			}
+			ui.m_tbl->reload();
+		});
 }
 
 void ZUsers::init(const QString &m_TblName)

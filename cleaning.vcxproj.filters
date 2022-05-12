@@ -212,6 +212,9 @@
     <ClCompile Include="src\zworks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\zvariants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\zimagelabel.h">
@@ -379,13 +382,10 @@
     <ClInclude Include="src\zperiods.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\zposts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\zcontracts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\zworks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zvariants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -444,6 +444,12 @@
     <QtMoc Include="src\zperiodform.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\zposts.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\zcontracts.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\zeditbaseform.ui">
@@ -489,6 +495,12 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="src\zperiodform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\zpostsform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\zcontractsform.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
