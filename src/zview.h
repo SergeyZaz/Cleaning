@@ -115,3 +115,4 @@ signals:
 
 double QString2Double(QString txt);
 void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString& filter = "");
+void loadItemsToComboBox(QComboBox* cbo, const QMap<int, QString>& map);

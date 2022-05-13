@@ -2,6 +2,7 @@
 #include "zmessager.h"
 #include "zsettings.h"
 #include <QMessageBox>
+#include <QSqlDriver>
 
 ZEstimates::ZEstimates(QWidget* parent, Qt::WindowFlags flags) : ZMdiChild(parent, flags)
 {
@@ -44,6 +45,30 @@ ZEstimatesForm::ZEstimatesForm(QWidget* parent, Qt::WindowFlags flags) : ZEditAb
 	connect(ui.treeWorks, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(itemChangedSlot(QTreeWidgetItem*, int)));
 	ui.treeWorks->setColumnWidth(0, 200);
 
+	ui.tblPostFio->setModel(postsModel.sortModel);
+	postsModel.sortModel->setDynamicSortFilter(true);
+	postsModel.sortModel->setFilterKeyColumn(1);
+	ui.tblPostFio->horizontalHeader()->setSortIndicator(1, Qt::DescendingOrder);
+	ui.tblPostFio->sortByColumn(1, Qt::DescendingOrder);
+	ui.tblPostFio->setColumnWidth(0, 200);
+	ui.tblPostFio->setColumnWidth(1, 200);
+	ui.tblPostFio->verticalHeader()->setDefaultSectionSize(20);
+	ui.tblPostFio->setItemDelegate(new ZEstimatesFioDelegate(ui.tblPostFio));
+
+	ui.tblWorkFio->setModel(worksModel.sortModel);
+	worksModel.sortModel->setDynamicSortFilter(true);
+	worksModel.sortModel->setFilterKeyColumn(1);
+	ui.tblWorkFio->horizontalHeader()->setSortIndicator(1, Qt::DescendingOrder);
+	ui.tblWorkFio->sortByColumn(1, Qt::DescendingOrder);
+	ui.tblWorkFio->setColumnWidth(0, 200);
+	ui.tblWorkFio->setColumnWidth(1, 200);
+	ui.tblWorkFio->verticalHeader()->setDefaultSectionSize(20);
+	ui.tblWorkFio->setItemDelegate(new ZEstimatesFioDelegate(ui.tblWorkFio));
+
+	connect(ui.dateEditStart, SIGNAL(dateChanged(const QDate&)), this, SLOT(dateChangedSlot(const QDate&)));
+	connect(ui.dateEditEnd, SIGNAL(dateChanged(const QDate&)), this, SLOT(dateChangedSlot(const QDate&)));
+	
+	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(changePeriodSlot(int)));
 }
 
 ZEstimatesForm::~ZEstimatesForm() {}
@@ -51,7 +76,7 @@ ZEstimatesForm::~ZEstimatesForm() {}
 int ZEstimatesForm::init(const QString& table, int id)
 {
 	ZEditAbstractForm::init(table, id);
-
+	
 	QSqlQuery query;
 	QString stringQuery;
 		
@@ -83,15 +108,15 @@ int ZEstimatesForm::init(const QString& table, int id)
 
 	loadItemsToComboBox(ui.cboContract, "contracts");
 
-	QDate tmp_d = QDate::currentDate();
-	ui.dateEditStart->setDate(tmp_d);
-	ui.dateEditEnd->setDate(tmp_d.addMonths(1));
-
 	// new record
 	if (curEditId == ADD_UNIC_CODE)
 	{
 		ui.txtName->setText("");
 		ui.txtComment->setText("");
+		QDate tmp_d = QDate::currentDate();
+		ui.dateEditStart->setDate(tmp_d);
+		ui.dateEditEnd->setDate(tmp_d.addMonths(1));
+
 		return true;
 	}
 
@@ -119,6 +144,68 @@ int ZEstimatesForm::init(const QString& table, int id)
 	return result;
 }
 
+void ZEstimatesForm::dateChangedSlot(const QDate&)
+{
+	QDate d1 = ui.dateEditStart->date();
+	QDate d2 = ui.dateEditEnd->date();
+
+	QString filter = QString("d_open>='%1' AND d_close<='%2'").arg(d1.toString("yyyy-MM-dd")).arg(d2.toString("yyyy-MM-dd"));
+	loadItemsToComboBox(ui.cboPeriod, "periods", filter);
+	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
+}
+
+void ZEstimatesForm::changePeriodSlot(int)
+{
+	QString stringQuery;
+	QSqlQuery query;
+
+	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
+
+	for (int i = 0; i < 2; i++)
+	{
+		//таблицы с ФИО
+		QMap<int, ZEstimatesFioModel::elem>* pdata = (i == 0) ? &postsModel.m_data : &worksModel.m_data;
+
+		stringQuery = QString("SELECT p.key, p.fio, fio.name FROM %1 AS p INNER JOIN fio ON(p.fio = fio.id) WHERE p.estimate_id=%2 AND p.period=%3 ORDER BY p.id")
+				.arg(i == 0 ? "posts2fio" : "works2fio")
+				.arg(curEditId)
+				.arg(periodId);
+
+		if (!query.exec(stringQuery))
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+			continue;
+		}
+
+		QMap<int, ZEstimatesFioModel::elem>::const_iterator iT = pdata->constBegin();
+		while (iT != pdata->constEnd())
+		{
+			auto v = iT.value();
+			v.id2 = 0;
+			v.txt2 = "";
+			pdata->insert(iT.key(), v);
+			++iT;
+		}
+
+		int r = 0;
+		while (query.next())
+		{
+			auto v = pdata->value(r);
+			if (query.value(0).toInt() == v.id1)
+			{
+				v.id2 = query.value(1).toInt();
+				v.txt2 = query.value(2).toString();
+				pdata->insert(r, v);
+			}
+			r++;
+		}
+
+	}
+
+	postsModel.Update();
+	worksModel.Update();
+}
+
 void ZEstimatesForm::addNewSlot()
 {
 	curEditId = ADD_UNIC_CODE;
@@ -127,7 +214,7 @@ void ZEstimatesForm::addNewSlot()
 
 void ZEstimatesForm::applyChanges()
 {
-	QString text, stringQuery;
+	QString stringQuery;
 
 	if (curEditId == ADD_UNIC_CODE)
 		stringQuery = QString("INSERT INTO estimates (name,comment,d_open,d_close,contract_id) VALUES (?, ?, ?, ?, ?) RETURNING id");
@@ -135,6 +222,10 @@ void ZEstimatesForm::applyChanges()
 		stringQuery = QString("UPDATE estimates SET name=?, comment=?, d_open=?, d_close=?, contract_id=? WHERE id=%1").arg(curEditId);
 
 	QSqlQuery query;
+
+	QSqlDriver* drv = QSqlDatabase::database().driver();
+	drv->beginTransaction();
+
 	query.prepare(stringQuery);
 
 	query.addBindValue(ui.txtName->text());
@@ -146,6 +237,7 @@ void ZEstimatesForm::applyChanges()
 	if (!query.exec())
 	{
 		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		drv->rollbackTransaction();
 		return;
 	}
 
@@ -154,16 +246,26 @@ void ZEstimatesForm::applyChanges()
 		curEditId = query.value(0).toInt();
 
 		if (!copyData(oldId, curEditId))
+		{
+			drv->rollbackTransaction();
 			return;
+		}
 	}
+
+	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 
 	//сохраняю информацию из таблиц
 	QTreeWidget* tree;
 	for (int i = 0; i < 2; i++)
 	{
-		stringQuery = QString("DELETE FROM %1 WHERE estimate_id=%2").arg(i==0 ? "estimates_posts" : "estimates_works").arg(curEditId);
+		//таблицы должностей/видов работ
+		stringQuery = QString("DELETE FROM %1 WHERE estimate_id=%2").arg(i == 0 ? "estimates_posts" : "estimates_works").arg(curEditId);
 		if (!query.exec(stringQuery))
-			ZMessager::Instance().Message(_CriticalError, query.lastError().text());
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+			drv->rollbackTransaction();
+			return;
+		}
 
 		tree = (i == 0) ? ui.treePosts : ui.treeWorks;
 
@@ -178,11 +280,49 @@ void ZEstimatesForm::applyChanges()
 				.arg((*it)->data(2, Qt::DisplayRole).toDouble());
 
 			if (!query.exec(stringQuery))
-				ZMessager::Instance().Message(_CriticalError, query.lastError().text());
+			{
+				ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+				drv->rollbackTransaction();
+				return;
+			}
 
 			++it;
 		}
+
+		//таблицы с ФИО
+		stringQuery = QString("DELETE FROM %1 WHERE estimate_id=%2 AND period=%3").arg(i == 0 ? "posts2fio" : "works2fio").arg(curEditId).arg(periodId);
+		if (!query.exec(stringQuery))
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+			drv->rollbackTransaction();
+			return;
+		}
+
+		QMap<int, ZEstimatesFioModel::elem>* pdata = (i == 0) ? &postsModel.m_data : &worksModel.m_data;
+		QMap<int, ZEstimatesFioModel::elem>::const_iterator iT = pdata->constBegin();
+		while (iT != pdata->constEnd())
+		{
+			auto v = iT.value();
+
+			stringQuery = QString("INSERT INTO %1 (key, fio, estimate_id, period) VALUES (%2, %3, %4, %5)")
+				.arg(i == 0 ? "posts2fio" : "works2fio")
+				.arg(v.id1)
+				.arg(v.id2)
+				.arg(curEditId)
+				.arg(periodId);
+
+			if (!query.exec(stringQuery))
+			{
+				ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+				drv->rollbackTransaction();
+				return;
+			}
+
+			++iT;
+		}
 	}
+
+	drv->commitTransaction();
 
 	accept();
 }
@@ -197,27 +337,53 @@ int ZEstimatesForm::copyData(int curId, int newId)
 
 void ZEstimatesForm::updateSumm()
 {
-	int count = 0, summ = 0;
+	int count[2], summ = 0;
 	QTreeWidgetItem* pItem;
 
 	QTreeWidget* tree = ui.treeWorks;
+	QMap<int, ZEstimatesFioModel::elem> *pdata = &worksModel.m_data;
+	int id, r, n;
+	QString txt;
 
 	for (int i = 0; i < 2; i++)
 	{
-		if(i==1)
+		count[i] = 0;
+		r = 0;
+
+		if (i == 1)
+		{
 			tree = ui.treePosts;
+			pdata = &postsModel.m_data;
+		}
 
 		QTreeWidgetItemIterator it(tree);
 		while (*it) 
 		{
-			if(!(*it)->parent())
-				count += (*it)->text(1).toInt();
+			if (!(*it)->parent())
+			{
+				n = (*it)->text(1).toInt();
+				id = (*it)->data(0, Qt::UserRole).toInt();
+				txt = (*it)->text(0);
+
+				for (int ii = 0; ii < n; ii++)
+				{
+					ZEstimatesFioModel::elem e = pdata->value(r);
+					e.id1 = id;
+					e.txt1 = txt;
+					pdata->insert(r, e);
+					r++;
+				}
+				count[i] += n;
+			}
 			summ += (*it)->text(3).toInt();
 			++it;
 		}
 	}
 
-	ui.lblTotal->setText(QString("Итого: человек: %1, сумма: %2").arg(count).arg(summ));
+	worksModel.setRowCount(count[0]);
+	postsModel.setRowCount(count[1]);
+
+	ui.lblTotal->setText(QString("Итого: человек: %1, сумма: %2").arg(count[0]+count[1]).arg(summ));
 }
 
 void ZEstimatesForm::addRowSlot()
@@ -445,6 +611,193 @@ void ZEstimatesTreeDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 }
 
 void ZEstimatesTreeDelegate::updateEditorGeometry(QWidget* editor,
+	const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	editor->setGeometry(option.rect);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ZEstimatesFioModel::ZEstimatesFioModel(QObject* parent) :
+	QAbstractListModel(parent)
+{
+	headers.append(QObject::tr("Должность/Вид работ"));
+	headers.append(QObject::tr("ФИО"));
+	
+	sortModel = new ZSortFilterProxyModel;
+	sortModel->setSourceModel(this);
+
+	rows = 0;
+}
+
+ZEstimatesFioModel::~ZEstimatesFioModel()
+{
+	delete sortModel;
+}
+
+QVariant ZEstimatesFioModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if (role != Qt::DisplayRole)
+		return QVariant();
+
+	if (orientation == Qt::Horizontal)
+		return headers.at(section);
+	else
+		return QString("");
+}
+
+void ZEstimatesFioModel::setRowCount(int n) 
+{ 
+	rows = n; 
+
+	QMapIterator<int, elem> i(m_data);
+	while (i.hasNext())
+	{
+		i.next();
+		int r = i.key();
+		if (r >= rows)
+			m_data.remove(r);
+	}
+
+	Update();
+}
+
+QVariant ZEstimatesFioModel::data(const QModelIndex& index, int role) const
+{
+	if (!index.isValid())
+		return QVariant();
+
+	if (index.column() >= headers.size())
+		return QVariant();
+
+	int r = index.row();
+	if (r >= rows)
+		return QVariant();
+
+	elem d = m_data.value(r);
+
+	switch (index.column())
+	{
+	case 0:
+		if (role == Qt::UserRole)
+			return d.id1;
+		if (role == Qt::DisplayRole)
+			return d.txt1;
+		break;
+	case 1:
+		if (role == Qt::UserRole)
+			return d.id2;
+		if (role == Qt::DisplayRole)
+			return d.txt2;
+		break;
+	default:
+		return false;
+	}
+	return QVariant();
+}
+
+void ZEstimatesFioModel::Update()
+{
+	beginResetModel();
+	endResetModel();
+}
+
+bool ZEstimatesFioModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	if (!index.isValid())
+		return false;
+
+	int r = index.row();
+	if (r >= rows)
+		return false;
+
+	elem d = m_data.value(r);
+
+	switch (index.column())
+	{
+	case 0:
+		if (role == Qt::UserRole)
+			d.id1 = value.toInt();
+		if (role == Qt::EditRole)
+			d.txt1 = value.toString();
+		break;
+	case 1:
+		if (role == Qt::UserRole)
+			d.id2 = value.toInt();
+		if (role == Qt::EditRole)
+			d.txt2 = value.toString();
+		break;
+	default:
+		return false;
+	}
+	m_data.insert(r, d);
+	return true;
+}
+
+Qt::ItemFlags ZEstimatesFioModel::flags(const QModelIndex& index) const
+{
+	Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	if (index.column() == 1)
+		flags |= Qt::ItemIsEditable;
+	return flags;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+ZEstimatesFioDelegate::ZEstimatesFioDelegate(QObject* parent)
+	: QItemDelegate(parent)
+{
+}
+
+QWidget* ZEstimatesFioDelegate::createEditor(QWidget* parent,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index) const
+{
+//	if (ZSettings::Instance().f_ReadOnly || ZSettings::Instance().m_UserType == 1)
+//		return NULL;
+
+	int column = index.column();
+
+	if (column != 1)
+		return NULL;
+
+	QComboBox* w = new QComboBox(parent);
+	w->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	return w;
+}
+
+void ZEstimatesFioDelegate::setEditorData(QWidget* editor,
+	const QModelIndex& index) const
+{
+	QComboBox* cbo = dynamic_cast<QComboBox*>(editor);
+	if (cbo)
+	{
+		loadItemsToComboBox(cbo, "fio");
+		int idx = index.model()->data(index, Qt::UserRole).toInt();
+		idx = cbo->findData(idx);
+		cbo->setCurrentIndex(idx);
+		return;
+	}
+	QItemDelegate::setEditorData(editor, index);
+}
+
+void ZEstimatesFioDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
+	const QModelIndex& index) const
+{
+	QComboBox* cbo = dynamic_cast<QComboBox*>(editor);
+	if (cbo)
+	{
+		QString txt = cbo->currentText();
+		int indx = cbo->itemData(cbo->findText(txt), Qt::UserRole).toInt();
+
+		model->setData(index, txt, Qt::EditRole);
+		model->setData(index, indx, Qt::UserRole);
+		return;
+	}
+	QItemDelegate::setModelData(editor, model, index);
+}
+
+void ZEstimatesFioDelegate::updateEditorGeometry(QWidget* editor,
 	const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	editor->setGeometry(option.rect);

@@ -1,5 +1,6 @@
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSqlDriver>
 #include "zperiodform.h"
 #include "zsettings.h"
 #include "zmessager.h"
@@ -67,6 +68,9 @@ void ZPeriodForm::applyChanges()
 	else
 		stringQuery = QString("UPDATE periods SET name=?, comment=?, d_open=?, d_close=? WHERE id=%1").arg(curEditId);
 
+	QSqlDriver* drv = QSqlDatabase::database().driver();
+	drv->beginTransaction();
+
 	QSqlQuery query;
 	query.prepare(stringQuery);
 	
@@ -79,6 +83,7 @@ void ZPeriodForm::applyChanges()
 	if(!query.exec())
 	{
 		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		drv->rollbackTransaction();
 		return;
 	}
 	
@@ -86,9 +91,14 @@ void ZPeriodForm::applyChanges()
 	{
 		curEditId = query.value(0).toInt();
 
-		if(!copyData(oldId, curEditId))
+		if (!copyData(oldId, curEditId))
+		{
+			drv->rollbackTransaction();
 			return;
+		}
 	}
+
+	drv->commitTransaction();
 
 	accept();
 }
@@ -113,6 +123,15 @@ int ZPeriodForm::copyData(int curId, int newId)
 
 	//users2objects
 	stringQuery = QString("INSERT INTO users2objects (key, value, period) (SELECT key, value, %2 FROM users2objects WHERE period=%1)").arg(curId).arg(newId);
+
+	if (!query.exec(stringQuery))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		return 0;
+	}
+
+	//posts2fio
+	stringQuery = QString("INSERT INTO posts2fio (post, fio, estimate_id, period) (SELECT post, fio, estimate_id, %2 FROM posts2fio WHERE period=%1)").arg(curId).arg(newId);
 
 	if (!query.exec(stringQuery))
 	{

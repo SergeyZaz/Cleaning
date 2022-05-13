@@ -760,3 +760,33 @@ void loadItemsToComboBox(QComboBox* cbo, const QString& tableName, const QString
 
 	cbo->blockSignals(false);
 }
+
+void loadItemsToComboBox(QComboBox* cbo, const QMap<int, QString> &map)
+{
+	QSqlQuery query;
+
+	cbo->blockSignals(true);
+
+	QString txt = cbo->currentText();
+
+	cbo->clear();
+
+	QMap<int, QString>::const_iterator i = map.constBegin();
+	while (i != map.constEnd()) {
+		cbo->addItem(i.value(), i.key());
+		++i;
+	}	
+
+	if (txt.isEmpty())
+		txt = " не задано";
+
+	cbo->setCurrentIndex(cbo->findText(txt));
+
+	cbo->setEditable(true);
+	QCompleter* completer = new QCompleter();
+	completer->setModel(cbo->model());
+	completer->setCaseSensitivity(Qt::CaseInsensitive);
+	cbo->setCompleter(completer);
+
+	cbo->blockSignals(false);
+}
