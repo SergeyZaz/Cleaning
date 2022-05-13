@@ -518,10 +518,10 @@
      <normaloff>:/images/digg_48.png</normaloff>:/images/digg_48.png</iconset>
    </property>
    <property name="text">
-    <string>Работы</string>
+    <string>Виды работ</string>
    </property>
    <property name="toolTip">
-    <string>Работы</string>
+    <string>Виды работ</string>
    </property>
   </action>
  </widget>
