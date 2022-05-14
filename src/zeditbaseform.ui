@@ -172,7 +172,7 @@ p, li { white-space: pre-wrap; }
  <layoutdefault spacing="6" margin="11"/>
  <resources>
   <include location="../cleaning.qrc"/>
-  <include location="../DSV.qrc"/>
+  <include location="../cleaning.qrc"/>
  </resources>
  <connections/>
 </ui>

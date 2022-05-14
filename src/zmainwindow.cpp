@@ -463,11 +463,8 @@ void ZMainWindow::slotOpenReportsDialog()
 		}
 	}
 
-	ZMdiChild* child = new ZReports(this);
-	connect(child, SIGNAL(needUpdate()), this, SLOT(slotUpdate()));
+	QWidget* child = new ZReports(this);
 	ui.mdiArea->addSubWindow(child);
-	child->setWindowTitleAndIcon(ui.actReports->text(), ui.actReports->icon());
-	child->init("estimates");
 	child->show();
 }
 

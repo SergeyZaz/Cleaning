@@ -14,7 +14,6 @@
 
 class ZEstimatesFioModel : public QAbstractListModel
 {
-	Q_OBJECT
 	QStringList headers;
 	uint		rows;
 	QVariant headerData(int section, Qt::Orientation orientation,

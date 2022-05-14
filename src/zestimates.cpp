@@ -15,11 +15,12 @@ void ZEstimates::init(const QString &m_TblName)
 	QList<int> cRem;
 
 	hideColumns << 0;
-	headers << tr("id") << tr("Название") << tr("Комментарий") << tr("Дата открытия") << tr("Дата закрытия") << tr("Договор");
+	headers << tr("id") << tr("Название") << tr("Комментарий") << tr("Дата открытия") << tr("Дата закрытия") << tr("Договор") << tr("Объект");
 
 	m_tbl->setTable(m_TblName, headers, cRem);
 	m_tbl->setCustomEditor(new ZEstimatesForm(this));
 	m_tbl->setRelation(5, "contracts", "id", "name");
+	m_tbl->setRelation(6, "objects", "id", "name");
 	m_tbl->init(hideColumns);
 }
 
@@ -69,6 +70,8 @@ ZEstimatesForm::ZEstimatesForm(QWidget* parent, Qt::WindowFlags flags) : ZEditAb
 	connect(ui.dateEditEnd, SIGNAL(dateChanged(const QDate&)), this, SLOT(dateChangedSlot(const QDate&)));
 	
 	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(changePeriodSlot(int)));
+
+	resize(1600, 800);
 }
 
 ZEstimatesForm::~ZEstimatesForm() {}
@@ -107,6 +110,7 @@ int ZEstimatesForm::init(const QString& table, int id)
 	updateSumm();
 
 	loadItemsToComboBox(ui.cboContract, "contracts");
+	loadItemsToComboBox(ui.cboObject, "objects");
 
 	// new record
 	if (curEditId == ADD_UNIC_CODE)
@@ -121,7 +125,7 @@ int ZEstimatesForm::init(const QString& table, int id)
 	}
 
 	// execute request
-	stringQuery = QString("SELECT name,comment,d_open,d_close,contract_id FROM estimates WHERE id = %1")
+	stringQuery = QString("SELECT name,comment,d_open,d_close,contract_id,object_id FROM estimates WHERE id = %1")
 		.arg(curEditId);
 
 	bool result = query.exec(stringQuery);
@@ -134,6 +138,7 @@ int ZEstimatesForm::init(const QString& table, int id)
 			ui.dateEditStart->setDate(query.value(2).toDate());
 			ui.dateEditEnd->setDate(query.value(3).toDate());
 			ui.cboContract->setCurrentIndex(ui.cboContract->findData(query.value(4).toInt()));
+			ui.cboObject->setCurrentIndex(ui.cboObject->findData(query.value(5).toInt()));
 		}
 	}
 	else
@@ -217,9 +222,9 @@ void ZEstimatesForm::applyChanges()
 	QString stringQuery;
 
 	if (curEditId == ADD_UNIC_CODE)
-		stringQuery = QString("INSERT INTO estimates (name,comment,d_open,d_close,contract_id) VALUES (?, ?, ?, ?, ?) RETURNING id");
+		stringQuery = QString("INSERT INTO estimates (name,comment,d_open,d_close,contract_id,object_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id");
 	else
-		stringQuery = QString("UPDATE estimates SET name=?, comment=?, d_open=?, d_close=?, contract_id=? WHERE id=%1").arg(curEditId);
+		stringQuery = QString("UPDATE estimates SET name=?, comment=?, d_open=?, d_close=?, contract_id=?, object_id=? WHERE id=%1").arg(curEditId);
 
 	QSqlQuery query;
 
@@ -233,6 +238,7 @@ void ZEstimatesForm::applyChanges()
 	query.addBindValue(ui.dateEditStart->date());
 	query.addBindValue(ui.dateEditEnd->date());
 	query.addBindValue(ui.cboContract->itemData(ui.cboContract->findText(ui.cboContract->currentText()), Qt::UserRole));
+	query.addBindValue(ui.cboObject->itemData(ui.cboObject->findText(ui.cboObject->currentText()), Qt::UserRole));
 
 	if (!query.exec())
 	{
@@ -691,7 +697,7 @@ QVariant ZEstimatesFioModel::data(const QModelIndex& index, int role) const
 			return d.txt2;
 		break;
 	default:
-		return false;
+		return QVariant();
 	}
 	return QVariant();
 }
