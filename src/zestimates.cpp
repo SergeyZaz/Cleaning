@@ -171,7 +171,7 @@ void ZEstimatesForm::changePeriodSlot(int)
 		//таблицы с ФИО
 		QMap<int, ZEstimatesFioModel::elem>* pdata = (i == 0) ? &postsModel.m_data : &worksModel.m_data;
 
-		stringQuery = QString("SELECT p.key, p.fio, fio.name FROM %1 AS p INNER JOIN fio ON(p.fio = fio.id) WHERE p.estimate_id=%2 AND p.period=%3 ORDER BY p.id")
+		stringQuery = QString("SELECT p.key, p.fio, fio.name, p.comment FROM %1 AS p INNER JOIN fio ON(p.fio = fio.id) WHERE p.estimate_id=%2 AND p.period=%3 ORDER BY p.id")
 				.arg(i == 0 ? "posts2fio" : "works2fio")
 				.arg(curEditId)
 				.arg(periodId);
@@ -188,6 +188,7 @@ void ZEstimatesForm::changePeriodSlot(int)
 			auto v = iT.value();
 			v.id2 = 0;
 			v.txt2 = "";
+			v.comment = "";
 			pdata->insert(iT.key(), v);
 			++iT;
 		}
@@ -200,6 +201,7 @@ void ZEstimatesForm::changePeriodSlot(int)
 			{
 				v.id2 = query.value(1).toInt();
 				v.txt2 = query.value(2).toString();
+				v.comment = query.value(3).toString();
 				pdata->insert(r, v);
 			}
 			r++;
@@ -213,6 +215,7 @@ void ZEstimatesForm::changePeriodSlot(int)
 
 void ZEstimatesForm::addNewSlot()
 {
+	oldId = curEditId;
 	curEditId = ADD_UNIC_CODE;
 	applyChanges();
 }
@@ -247,16 +250,8 @@ void ZEstimatesForm::applyChanges()
 		return;
 	}
 
-	if (curEditId == ADD_UNIC_CODE && oldId != ADD_UNIC_CODE && query.next())
-	{
+	if (curEditId == ADD_UNIC_CODE && query.next())
 		curEditId = query.value(0).toInt();
-
-		if (!copyData(oldId, curEditId))
-		{
-			drv->rollbackTransaction();
-			return;
-		}
-	}
 
 	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 
@@ -310,12 +305,13 @@ void ZEstimatesForm::applyChanges()
 		{
 			auto v = iT.value();
 
-			stringQuery = QString("INSERT INTO %1 (key, fio, estimate_id, period) VALUES (%2, %3, %4, %5)")
+			stringQuery = QString("INSERT INTO %1 (key, fio, estimate_id, period, comment) VALUES (%2, %3, %4, %5, '%6')")
 				.arg(i == 0 ? "posts2fio" : "works2fio")
 				.arg(v.id1)
 				.arg(v.id2)
 				.arg(curEditId)
-				.arg(periodId);
+				.arg(periodId)
+				.arg(v.comment);
 
 			if (!query.exec(stringQuery))
 			{
@@ -327,8 +323,22 @@ void ZEstimatesForm::applyChanges()
 			++iT;
 		}
 	}
-
+	
 	drv->commitTransaction();
+
+	if (oldId != ADD_UNIC_CODE)
+	{
+		drv->beginTransaction();
+
+		if (!copyData(oldId, curEditId))
+		{
+			drv->rollbackTransaction();
+			return;
+		}
+
+		drv->commitTransaction();
+	}
+
 
 	accept();
 }
@@ -337,7 +347,34 @@ int ZEstimatesForm::copyData(int curId, int newId)
 {
 	QSqlQuery query;
 	QString stringQuery;
+	/*
+	for (int i = 0; i < 2; i++)
+	{
+		//estimates_posts estimates_works
+		stringQuery = QString("INSERT INTO %1 (estimate_id,link_id,count,val) (SELECT %2, link_id, count,val FROM %1 WHERE estimate_id=%3)")
+			.arg(i == 0 ? "estimates_posts" : "estimates_works")
+			.arg(newId)
+			.arg(curId);
 
+		if (!query.exec(stringQuery))
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+			return 0;
+		}
+
+		//posts2fio works2fio
+		stringQuery = QString("INSERT INTO %1 (key, fio, estimate_id, period) (SELECT key, fio, %2, period FROM %1 WHERE period=%3)")
+			.arg(i == 0 ? "posts2fio" : "works2fio")
+			.arg(newId)
+			.arg(curId);
+
+		if (!query.exec(stringQuery))
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+			return 0;
+		}
+	}
+	*/
 	return 1;
 }
 

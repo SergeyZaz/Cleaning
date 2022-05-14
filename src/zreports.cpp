@@ -13,6 +13,8 @@ ZReports::ZReports(QWidget* parent, Qt::WindowFlags flags) : QWidget(parent, fla
 	curFindId = -1;
 
 	ui.setupUi(this);
+
+	ui.pnlFind->setVisible(false);
 	
 	loadItemsToComboBox(ui.cboEstimate, "estimates");
 	loadItemsToComboBox(ui.cboPeriod, "periods");
@@ -135,6 +137,23 @@ WHERE p.estimate_id=%2 AND p.period=%3 ORDER BY p.id")
 
 			model.m_data << v;
 		}
+	}
+
+	stringQuery = QString("SELECT fio, d, var FROM reports WHERE estimate_id=%1 AND period=%2")
+		.arg(estimateId)
+		.arg(periodId);
+
+	if (!query.exec(stringQuery))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+	}
+
+	while (query.next())
+	{
+		ZReportsModel::elem *pv = model.getForFio(query.value(0).toInt());
+		if (!pv)
+			continue;
+		pv->vars.insert(query.value(1).toInt(), query.value(2).toInt());
 	}
 
 	model.Update();
@@ -350,13 +369,13 @@ QVariant ZReportsModel::data(const QModelIndex& index, int role) const
 
 	return QVariant();
 }
-	
+
 void ZReportsModel::Update()
 {
 	beginResetModel();
 	endResetModel();
 }
-	
+
 bool ZReportsModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (!index.isValid())
@@ -369,7 +388,7 @@ bool ZReportsModel::setData(const QModelIndex& index, const QVariant& value, int
 	int r = index.row();
 	if (r >= rowCount(index))
 		return false;
-	
+
 	if (c < headers_before.size())
 		return false;
 
@@ -390,7 +409,7 @@ bool ZReportsModel::setData(const QModelIndex& index, const QVariant& value, int
 		}
 	}
 
-	c -= nd+1;
+	c -= nd + 1;
 	if (c == headers_after.size() - 1)
 	{
 		if (role == Qt::EditRole)
@@ -406,13 +425,7 @@ bool ZReportsModel::updateDataDB(op_type t, elem* pData, int d)
 {
 	QString stringQuery;
 	QSqlQuery query;
-	/*
-		estimate_id bigint NOT NULL,
-		period bigint NOT NULL,
-		fio bigint NOT NULL,
-		var bigint NOT NULL,
-		d bigint DEFAULT 0,
-	*/
+
 	switch (t)
 	{
 	case UP_COMMENT:
@@ -420,16 +433,22 @@ bool ZReportsModel::updateDataDB(op_type t, elem* pData, int d)
 			.arg(pData->id > 0 ? "posts2fio" : "works2fio")
 			.arg(pData->comment)
 			.arg(pData->id > 0 ? pData->id : -1 * pData->id);
-			break;
+		break;
 	case UP_VALUE:
-		stringQuery = QString("SELECT d_open, d_close FROM periods WHERE id=%1").arg(periodId);
+		stringQuery = QString("DELETE FROM reports WHERE estimate_id=%1 AND period=%2 AND fio=%3 AND d=%4;\
+INSERT INTO reports (estimate_id, period, fio, d, var) VALUES (%1, %2, %3, %4, %5);")
+.arg(estimateId)
+.arg(periodId)
+.arg(pData->fio_id)
+.arg(d)
+.arg(pData->vars.value(d));
 		break;
 	case DEL_VALUE:
 		stringQuery = QString("DELETE FROM reports WHERE estimate_id=%1 AND period=%2 AND fio=%3 AND d=%4")
 			.arg(estimateId)
 			.arg(periodId)
 			.arg(pData->fio_id)
-			.arg(pData->vars.value(d));
+			.arg(d);
 		break;
 	default:
 		return false;
@@ -439,6 +458,19 @@ bool ZReportsModel::updateDataDB(op_type t, elem* pData, int d)
 		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
 	return true;
 }
+
+ZReportsModel::elem* ZReportsModel::getForFio(int fio_id)
+{
+	int n = m_data.size();
+	for (int i = 0; i < n; i++)
+	{
+		elem* p = &m_data[i];
+		if (p->fio_id == fio_id)
+			return p;
+	}
+	return NULL;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
  QMap<int, QString> ZReportsDelegate::map;
 
@@ -467,7 +499,7 @@ void ZReportsDelegate::load()
 {
 	map.clear();
 	QSqlQuery query;
-	if (query.exec("SELECT id, name FROM variants"))
+	if (query.exec("SELECT id, name FROM variants ORDER BY name"))
 		while (query.next())
 			map.insert(query.value(0).toInt(), query.value(1).toString());
 	map.insert(0, "");

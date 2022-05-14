@@ -108,7 +108,6 @@ int ZPeriodForm::copyData(int curId, int newId)
 	QSqlQuery query;
 	QString stringQuery;
 
-	//tariffs и objects2fio не используются!!!
 
 	//payments2fio не копирую!!!
 

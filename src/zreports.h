@@ -41,6 +41,7 @@ public:
 	};
 	QList<elem> m_data;
 
+	elem* getForFio(int fio_id);
 	enum op_type {UP_COMMENT, UP_VALUE, DEL_VALUE};
 	bool updateDataDB(op_type t, elem* pData, int d = -1);
 };

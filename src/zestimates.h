@@ -34,7 +34,7 @@ public:
 	struct elem
 	{
 		int id1, id2;
-		QString txt1, txt2;
+		QString txt1, txt2, comment;
 	};
 	QMap<int, elem> m_data;
 };
