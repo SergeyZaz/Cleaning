@@ -51,7 +51,21 @@ ZReports::ZReports(QWidget* parent, Qt::WindowFlags flags) : QWidget(parent, fla
 
 ZReports::~ZReports()
 {
+	if (ZSettings::Instance().m_UserType == 1)
+		return;
 
+	QSqlQuery query;
+	if (!query.exec("DELETE FROM config WHERE key = 'memo'"))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		return;
+	}
+
+	if (!query.exec(QString("INSERT INTO config(key, value) VALUES('memo','%1')").arg(ui.txtMemo->toPlainText())))
+	{
+		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
+		return;
+	}
 }
 
 QSize ZReports::sizeHint() const
