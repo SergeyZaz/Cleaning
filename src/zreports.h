@@ -9,7 +9,8 @@
 
 class ZReportsModel : public QAbstractListModel
 {
-	QStringList headers_before, headers_after, n_days;
+	static QStringList n_days;
+	QStringList headers_before, headers_after;
 	QVariant headerData(int section, Qt::Orientation orientation,
 		int role = Qt::DisplayRole) const;
 	Qt::ItemFlags flags(const QModelIndex&) const;
@@ -29,15 +30,22 @@ public:
 	struct elem
 	{
 		int post_id, fio_id;
-		QString post, fio;
+		QString post, fio, org, comment;
 		QMap<int, int> vars;
-		double tariff, summ;
+		double tariff, doplata, vichet, zp;
+		elem()
+		{
+			post_id = fio_id = 0;
+			tariff = doplata = vichet = zp = 0.0;
+		}
 	};
 	QList<elem> m_data;
 };
 
 class ZReports : public QWidget
 {
+	Q_OBJECT
+
 	Ui::ZReport ui;
 	int curFindId;
 
@@ -62,7 +70,11 @@ public slots:
 class ZReportsDelegate : public QItemDelegate
 {
 public:
+	static QMap<int, QString> map;
+
 	ZReportsDelegate(QObject* parent = 0);
+
+	static void load();
 
 	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 		const QModelIndex& index) const;

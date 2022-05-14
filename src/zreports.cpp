@@ -11,6 +11,9 @@ ZReports::ZReports(QWidget* parent, Qt::WindowFlags flags) : QWidget(parent, fla
 	curFindId = -1;
 
 	ui.setupUi(this);
+	
+	loadItemsToComboBox(ui.cboEstimate, "estimates");
+	loadItemsToComboBox(ui.cboPeriod, "periods");
 
 	connect(ui.cboEstimate, SIGNAL(currentIndexChanged(int)), this, SLOT(changeEstimateSlot(int)));
 	connect(ui.cboPeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(changePeriodSlot(int)));
@@ -38,6 +41,8 @@ ZReports::ZReports(QWidget* parent, Qt::WindowFlags flags) : QWidget(parent, fla
 	ui.tbl->setColumnWidth(1, 200);
 	ui.tbl->verticalHeader()->setDefaultSectionSize(20);
 	ui.tbl->setItemDelegate(new ZReportsDelegate(ui.tbl));
+	
+	ui.cboPeriod->setCurrentIndex(ui.cboPeriod->findData(ZSettings::Instance().m_PeriodId));
 }
 
 ZReports::~ZReports()
@@ -63,19 +68,26 @@ void ZReports::buildReport()
 	int periodId = ui.cboPeriod->itemData(ui.cboPeriod->currentIndex(), Qt::UserRole).toInt();
 	int estimateId = ui.cboEstimate->itemData(ui.cboEstimate->currentIndex(), Qt::UserRole).toInt();
 
-	stringQuery = QString("SELECT link_id, count, val FROM %1 WHERE estimate_id=%2").arg(periodId).arg(estimateId);
-	if (!query.exec(stringQuery))
+	for (int i = 0; i < 2; i++)
 	{
-		ZMessager::Instance().Message(_CriticalError, query.lastError().text(), tr("Ошибка"));
-	}
-	else
-	{
+		stringQuery = QString("SELECT p.key, p.fio, fio.name FROM %1 AS p INNER JOIN fio ON(p.fio = fio.id) WHERE p.estimate_id=%2 AND p.period=%3 ORDER BY p.id")
+			.arg(i == 0 ? "posts2fio" : "works2fio")
+			.arg(estimateId)
+			.arg(periodId);
+
+		if (!query.exec(stringQuery))
+		{
+			ZMessager::Instance().Message(_CriticalError, query.lastError().text(), "Ошибка");
+			continue;
+		}
+
 		model.m_data.clear();
 
 		while (query.next())
 		{
 		}
 	}
+	model.Update();
 }
 
 void ZReports::findFirstSlot(const QString& text)
@@ -108,6 +120,7 @@ int ZReports::findText(const QString& text)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+QStringList ZReportsModel::n_days;
 
 ZReportsModel::ZReportsModel(QObject* parent)
 {
@@ -127,6 +140,8 @@ ZReportsModel::ZReportsModel(QObject* parent)
 
 	sortModel = new ZSortFilterProxyModel;
 	sortModel->setSourceModel(this);
+
+	ZReportsDelegate::load();
 }
 	
 ZReportsModel::~ZReportsModel() 
@@ -162,8 +177,15 @@ QVariant ZReportsModel::headerData(int section, Qt::Orientation orientation, int
 Qt::ItemFlags ZReportsModel::flags(const QModelIndex& index) const
 {
 	Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-	if (index.column() == 1)
+	
+	int c = index.column();
+	if (c < headers_before.size())
+		return flags;
+
+	c -= headers_before.size();
+	if (c < d_begin.daysTo(d_end))
 		flags |= Qt::ItemIsEditable;
+
 	return flags;
 }
 
@@ -180,13 +202,14 @@ QVariant ZReportsModel::data(const QModelIndex& index, int role) const
 	if (r >= rowCount(index))
 		return QVariant();
 	
-	const elem *pv = &m_data.at(r);
+	const elem *pv = &m_data[r];
 
 	if (c < headers_before.size())
 	{
 		switch (c)
 		{
 		case 0:
+			return pv->org;
 			break;
 		case 1:
 			if (role == Qt::UserRole)
@@ -208,13 +231,45 @@ QVariant ZReportsModel::data(const QModelIndex& index, int role) const
 	c -= headers_before.size();
 	if (c < d_begin.daysTo(d_end))
 	{
-		//int n = d_begin.daysTo(c);
+		if (role == Qt::UserRole)
+			return pv->vars.value(c); 
+		if (role == Qt::DisplayRole)
+			return ZReportsDelegate::map.value(pv->vars.value(c));
 		return QVariant();
 	}
 
-//	section -= d_begin.daysTo(d_end);
-//	if (section < headers_after.size())
-//		return headers_after.at(section);
+	c -= d_begin.daysTo(d_end);
+	if (c < headers_after.size())
+	{
+		switch (c)
+		{
+		case 0:
+		{
+			double s = 0;
+			QMap<int, int>::const_iterator iT = pv->vars.constBegin();
+			while (iT != pv->vars.constEnd()) {
+				s += iT.value();
+				++iT;
+			}
+			return s;
+		}
+		case 1:
+			return pv->tariff;
+		case 2:
+			return pv->zp;
+		case 3:
+			return pv->doplata;
+		case 4:
+			return pv->vichet;
+		case 5:
+			return pv->zp + pv->doplata - pv->vichet;
+		case 6:
+			return pv->comment;
+		default:
+			break;
+		}
+		return QVariant();
+	}
 
 	return QVariant();
 }
@@ -231,7 +286,7 @@ bool ZReportsModel::setData(const QModelIndex& index, const QVariant& value, int
 		return false;
 
 	int r = index.row();
-	if (r >= rows)
+	if (r >= rowCount(index))
 		return false;
 
 
@@ -240,6 +295,7 @@ bool ZReportsModel::setData(const QModelIndex& index, const QVariant& value, int
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+ QMap<int, QString> ZReportsDelegate::map;
 
 ZReportsDelegate::ZReportsDelegate(QObject* parent)
 	: QItemDelegate(parent)
@@ -263,13 +319,23 @@ QWidget* ZReportsDelegate::createEditor(QWidget* parent,
 	return w;
 }
 
+void ZReportsDelegate::load()
+{
+	map.clear();
+	QSqlQuery query;
+	if (query.exec("SELECT id, name FROM variants"))
+		while (query.next())
+			map.insert(query.value(0).toInt(), query.value(1).toString());
+}
+
 void ZReportsDelegate::setEditorData(QWidget* editor,
 	const QModelIndex& index) const
 {
 	QComboBox* cbo = dynamic_cast<QComboBox*>(editor);
 	if (cbo)
 	{
-		loadItemsToComboBox(cbo, "variants");
+		load();
+		loadItemsToComboBox(cbo, map);
 		int idx = index.model()->data(index, Qt::UserRole).toInt();
 		idx = cbo->findData(idx);
 		cbo->setCurrentIndex(idx);

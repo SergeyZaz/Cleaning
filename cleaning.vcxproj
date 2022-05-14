@@ -236,7 +236,7 @@
     <ClInclude Include="src\zpersons.h" />
     <QtMoc Include="src\zview.h" />
     <QtMoc Include="src\ztoolwidget.h" />
-    <ClInclude Include="src\zreports.h" />
+    <QtMoc Include="src\zreports.h" />
     <QtMoc Include="src\ztariffsform.h" />
     <QtMoc Include="src\zposts.h" />
     <QtMoc Include="src\zmdichild.h" />
